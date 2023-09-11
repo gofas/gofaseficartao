@@ -13,6 +13,9 @@ require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 use WHMCS\Database\Capsule;
 if($_POST and !$_POST['error'] ){
+	$htmlOutput .= '<script src="https://cdn.jsdelivr.net/gh/efipay/js-payment-token-efi/dist/payment-token-efi.min.js"></script>';
+	$htmlOutput .= '<script type="text/javascript" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc_.js"></script>';
+	echo $htmlOutput;
 	//echo '<img class="lb-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==">';
 	require __DIR__.'/functions.php';
 	$params = getGatewayVariables('gofaseficartao');

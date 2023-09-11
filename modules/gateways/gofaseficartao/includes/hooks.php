@@ -7,6 +7,7 @@
  * @support		https://gofas.net/?p=8343
  * @version		4.0.0
  */
+use WHMCS\Database\Capsule;
 add_hook('ClientAreaPage', 1, function($vars) {
 	if(stripos($_SERVER['REQUEST_URI'], 'process') and stripos($_SERVER['REQUEST_URI'], 'invoice')){
 	    echo '<style>.alert.alert-info.text-center,div#lightbox{display: none;}</style>';
@@ -149,6 +150,20 @@ add_hook('ClientAreaPageViewInvoice', 1, function($vars){
 add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 	$params = getGatewayVariables('gofaseficartao');
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'geficwhmcsurl') -> get( array( 'value','created_at') ) as $geficwhmcsurl_ ){
+			$geficwhmcsurl					= $geficwhmcsurl_->value;
+			$geficwhmcsurl_created_at		= $geficwhmcsurl_->created_at;
+		}
+		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc_.js"></script>';
+		
+		
+		require __DIR__.'/functions.php';
+		$params_api = gefic_api_connect();
+		$htmlOutput .= $params_api['javascript'];
+
+		//$htmlOutput .= '<script type="text/javascript" src="'.$geficwhmcsurl.'/assets/js/jquery.min.js"></script>';
+
 		$params = getGatewayVariables('gofaseficartao');
 		$vars_ = json_decode(json_encode($vars));
 		//echo '<pre style="height: 250px;">',print_r($vars_),'</pre>';
@@ -165,9 +180,11 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 		 $options_installments .= '<label class="col-sm-4 control-label">Parcelamento</label><div class="col-sm-6" style="margin-bottom: 15px;"><select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
 		 $options_installments .= '<option value="1">1 x de R$ '.number_format( $vars_->invoice->model->total,	2, ',', '.').'</option>';
 		 foreach (range(2, (int)$params['maxinstallments']) as $maxinstallments_){
-					$maxinstallments__ = $maxinstallments_++;
-				$options_installments .= '<option value="'.$maxinstallments__.'">'.$maxinstallments__.' x de R$ '.number_format( $vars_->invoice->model->total / (int)$maxinstallments__ ,	2, ',', '.').'</option>';
-		}
+				$maxinstallments__ = $maxinstallments_++;
+				if($maxinstallments__>0){
+					$options_installments .= '<option value="'.$maxinstallments__.'">'.$maxinstallments__.' x de R$ '.number_format( $vars_->invoice->model->total / (int)$maxinstallments__ ,	2, ',', '.').'</option>';
+				}
+			}
 		$options_installments .= '</select></div>';
 		 $htmlOutput .= "<script>
 		 	if(document.getElementById('installment_').value == 'yes'){
@@ -204,6 +221,18 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 	add_hook('ClientAreaFooterOutput', 1, function($vars){
 		$params = getGatewayVariables('gofaseficartao');
 		$vars_ = json_decode(json_encode($vars));
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'geficwhmcsurl') -> get( array( 'value','created_at') ) as $geficwhmcsurl_ ){
+			$geficwhmcsurl					= $geficwhmcsurl_->value;
+			$geficwhmcsurl_created_at		= $geficwhmcsurl_->created_at;
+		}
+		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc_.js"></script>';
+		
+		
+		require __DIR__.'/functions.php';
+		$params_api = gefic_api_connect();
+		$htmlOutput .= $params_api['javascript'];
+
 		if($params['minimunamountinstallments']){
 			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
 		}

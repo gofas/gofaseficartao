@@ -59,8 +59,9 @@ function gofaseficartao_3dsecure($params){
     		}
 			
 			//$htmlOutput .= '<input type="hidden" name="cardHash" id="cardHash" value="" />';			
-			$htmlOutput .= '<input type="hidden" name="identificadorConta" id="identificadorConta" value="'.$params_api['identifier'].'" />';
-			$htmlOutput .= '<input type="hidden" name="valorTotal" id="valorTotal" value="'.$params['amount'].'" />';
+			$htmlOutput .= '<input type="hidden" name="identificadorConta" id="identificadorConta" value="'.$params['identifier'].'" />';
+			
+			$htmlOutput .= '<input type="hidden" name="valorTotal" id="valorTotal" value="'.(int)((int)preg_replace("/[^0-9]/","",$params['amount'])).'" />';
 						
 			$htmlOutput .= '<input type="hidden" name="storeCard" id="storeCard" value="yes" />';
 			$htmlOutput .= '<input type="hidden" name="paymentToken" id="paymentToken" value="" />';
@@ -69,18 +70,27 @@ function gofaseficartao_3dsecure($params){
 			
 			$htmlOutput .= '<input type="hidden" name="error" id="error" value="" />';
 
-			$htmlOutput .= '<input type="hidden" name="cc-num" id="cc-num" value="'.$params['cardnum'].'" />';
+			$htmlOutput .= '<input type="hidden" name="numeroCartao" id="numeroCartao" value="'.$params['cardnum'].'" />';
 			
-			$htmlOutput .= '<input type="hidden" name="cc-expm" id="cc-expm" value="'.substr($params["cardexp"], 0, 2).'" />';
-			$htmlOutput .= '<input type="hidden" name="cc-expy" id="cc-expy" value="20'.substr($params['cardexp'], 2, 2).'" />';
+			$htmlOutput .= '<input type="hidden" name="ccexp" id="ccexp" value="'.$params["cardexp"].'" />';
+			$htmlOutput .= '<input type="hidden" name="mesVencimento" id="mesVencimento" value="'.substr($params["cardexp"], 0, 2).'" />';
+			$htmlOutput .= '<input type="hidden" name="anoVencimento" id="anoVencimento" value="20'.substr($params['cardexp'], 2, 2).'" />';
 			
-			$htmlOutput .= '<input type="hidden" name="cc-cvc" id="cc-cvc" value="'.$params['cccvv'].'" />';
-			$htmlOutput .= '<input type="hidden" name="cardtype" id="cardtype" value="'.$params['cardtype'].'" />';
+			$htmlOutput .= '<input type="hidden" name="cvv" id="cvv" value="'.$params['cccvv'].'" />';
+			$htmlOutput .= '<input type="hidden" name="bandeira" id="bandeira" value="'.$params['cardtype'].'" />';
+			if($params_api['api_mode'] === 'live'){
+				$environment = 'production';
+			}
+			else{
+				$environment = $params_api['api_mode'];
+			}
+			$htmlOutput .= '<input type="hidden" name="environment" id="environment" value="'.$environment.'" />';
+			
 			
     		$htmlOutput .= '</form>';
 			$htmlOutput .= $params_api['javascript'];
-			$htmlOutput .= '<script src="https://cdn.jsdelivr.net/gh/efipay/js-payment-token-efi/dist/payment-token-efi.min.js"></script>';
-			$htmlOutput .= '<script type="text/javascript" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
+			$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
+			$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc_.js"></script>';
 
 			if($params['sandbox']){
 				$environment = 'false';

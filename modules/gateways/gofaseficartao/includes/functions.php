@@ -37,6 +37,7 @@ if(!function_exists('gefic_api_connect')){
 				'identifier' => $params['identifier'],
 				'charge_url' => 'https://sandbox.gerencianet.com.br/v1/',
 				'javascript' => '<script type="text/javascript">var s=document.createElement("script");s.type="text/javascript";var v=parseInt(Math.random()*1000000);s.src="https://sandbox.gerencianet.com.br/v1/cdn/'. $params['identifier'].'/"+v;s.async=false;s.id="'. $params['identifier'].'";if(!document.getElementById("'. $params['identifier'].'")){document.getElementsByTagName("head")[0].appendChild(s);};$gn={validForm:true,processed:false,done:{},ready:function(fn){$gn.done=fn;}};</script>',
+				//'javascript'=> '<script type="text/javascript">var s=document.createElement("script");s.type="text/javascript";var v=parseInt(Math.random()*1000000);s.src="https://sandbox.gerencianet.com.br/v1/cdn/'.$params['identifier'].'/"+v;s.async=false;s.id="'.$params['identifier'].'";if(!document.getElementById("'.$params['identifier'].'")){document.getElementsByTagName("head")[0].appendChild(s);};$gn={validForm:true,processed:false,done:{},ready:function(fn){$gn.done=fn;}};</script>',
 	
 			];
 		}
@@ -48,6 +49,7 @@ if(!function_exists('gefic_api_connect')){
 				'identifier' => $params['identifier'],
 				'charge_url' => 'https://api.gerencianet.com.br/v1/',
 				'javascript' => '<script type="text/javascript">var s=document.createElement("script");s.type="text/javascript";var v=parseInt(Math.random()*1000000);s.src="https://api.gerencianet.com.br/v1/cdn/'. $params['identifier'].'/"+v;s.async=false;s.id="'. $params['identifier'].'";if(!document.getElementById("'. $params['identifier'].'")){document.getElementsByTagName("head")[0].appendChild(s);};$gn={validForm:true,processed:false,done:{},ready:function(fn){$gn.done=fn;}};</script>',
+				//'javascript' => '<script type="text/javascript">var s=document.createElement("script");s.type="text/javascript";var v=parseInt(Math.random()*1000000);s.src="https://api.gerencianet.com.br/v1/cdn/'.$identifier.'/"+v;s.async=false;s.id="'.$identifier.'";if(!document.getElementById("'.$identifier.'")){document.getElementsByTagName("head")[0].appendChild(s);};$gn={validForm:true,processed:false,done:{},ready:function(fn){$gn.done=fn;}};</script>',
 			];
 		}
 		return $params_api;
