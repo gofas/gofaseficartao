@@ -20,8 +20,7 @@
  *	aura // Bandeira Aura
  *
 **/
-
-document.addEventListener('DOMContentLoaded', () => { 
+$(document).ready(function (){ 
 	
 	//document.getElementById("btnSubmit").disabled = true;
 	//document.getElementById("btnSubmit").style.cursor = "not-allowed";

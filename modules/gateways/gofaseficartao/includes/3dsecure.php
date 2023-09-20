@@ -64,7 +64,7 @@ function gofaseficartao_3dsecure($params){
 			$htmlOutput .= '<input type="hidden" name="valorTotal" id="valorTotal" value="'.(int)((int)preg_replace("/[^0-9]/","",$params['amount'])).'" />';
 						
 			$htmlOutput .= '<input type="hidden" name="storeCard" id="storeCard" value="yes" />';
-			$htmlOutput .= '<input type="hidden" name="paymentToken" id="paymentToken" value="" />';
+			$htmlOutput .= '<input type="hidden" name="paymentToken" id="paymentToken" value="na" />';
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
 			$htmlOutput .= '<input type="hidden" name="mascaraCartao" id="mascaraCartao" value="" />';
 			
@@ -90,7 +90,7 @@ function gofaseficartao_3dsecure($params){
     		$htmlOutput .= '</form>';
 			$htmlOutput .= $params_api['javascript'];
 			$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
-			$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc_.js"></script>';
+			$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
 
 			if($params['sandbox']){
 				$environment = 'false';
@@ -99,7 +99,8 @@ function gofaseficartao_3dsecure($params){
 				$environment = 'true';
 			}
 			$htmlOutput .= '<script type="text/javascript">
-				document.getElementById("storeCard").value = sessionStorage.getItem("nostore");
+			    document.getElementById("storeCard").value = sessionStorage.getItem("nostore");
+				document.getElementById("paymentToken").value = sessionStorage.getItem("paymentToken_");
 				if(sessionStorage.getItem("installments_") > 1 ){
 					document.getElementById("installmentsnum").value = sessionStorage.getItem("installments_");
 				}
