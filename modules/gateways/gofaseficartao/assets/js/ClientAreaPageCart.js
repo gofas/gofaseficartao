@@ -10,7 +10,10 @@
 function inputstorefunc_2(){
   	var checkBox = document.getElementById("nostore");
 	var geficCheckIcon = document.getElementById("geficCheckIcon");
-  	if(checkBox.value == "yes"){
+	var paymentToken_ = document.getElementById("paymentToken").value;
+	sessionStorage.setItem("paymentToken_",paymentToken_);
+  	
+	if (checkBox.value == "yes") {
 		sessionStorage.setItem("nostore", "no");
 		checkBox.value = "no";
 		geficCheckIcon.className = "geficCheckIconOff fas fa-check"
@@ -25,8 +28,9 @@ function inputstorefunc_2(){
 function gefic_inputs_2(){
 	sessionStorage.setItem("nostore", "yes");
 	sessionStorage.setItem('installments_', 1);
+	sessionStorage.setItem('paymentToken_', "Na");
 	var gefic_input = '<style>.geficCheckIconOff:hover:before {border: 2px solid #3e89c5;padding: 4px;}.geficCheckIcon:before {background-color: #3e89c5; font-size: 11px; color: #ffffff; padding: 5px; border: 1px solid #3e89c5; line-height: 0; border-radius: 50%; margin: 1px;}.geficCheckIconOff:before {background-color: #ffffff; font-size: 11px; color: #ffffff; padding: 5px; border: 1px solid #c6c3bf; line-height: 0; border-radius: 50%; margin: 1px;}</style><label style="cursor: pointer;" onclick="inputstorefunc_2();"><span ><i id="geficCheckIcon" class="geficCheckIcon fas fa-check"></i></span>&nbsp;&nbsp;Automatizar pagamentos futuros</label><input type="hidden" id="nostore" value="yes">';
 	document.getElementById('inputNoStoreContainer').innerHTML = gefic_input;
-	document.getElementById('inputDescriptionContainer').style.display = "none";
+	//document.getElementById('inputDescriptionContainer').style.display = "none";
 }
 window.onload=gefic_inputs_2();

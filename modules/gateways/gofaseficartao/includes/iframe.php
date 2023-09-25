@@ -17,9 +17,7 @@ if($_POST and !$_POST['error'] ){
 	$params = getGatewayVariables('gofaseficartao');
 	$params_api = gefic_api_connect();
 	$customer = gefic_customer($_POST['userid']);
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'geficwhmcsurl') -> get( array( 'value','created_at') ) as $geficwhmcsurl_ ){
-		$geficwhmcsurl					= $geficwhmcsurl_->value;
-	}
+	$geficwhmcsurl = gefic_whmcs_url('whmcs_url');
 	$access_token_ = gefic_get_token();
 	$access_token = $access_token_['result']['access_token'];
 	// Invoice Info
@@ -28,34 +26,12 @@ if($_POST and !$_POST['error'] ){
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
-	//$amount = ((int)$_POST['amount'])*100;
 	$amount = (int)preg_replace("/[^0-9]/", "", $_POST['amount']);
-
-	// Cobrança avulsa
-	if($_POST['cardissuenum']){
-		$card = [
-			'myId'=> $_POST['pay_method_id'],
-		];
+	if($_POST['paymentToken'] and (string)($_POST['paymentToken']) !== (string)'Na'){
+		$paymentToken = $_POST['paymentToken'];
 	}
-	if(!$_POST['cardissuenum']){
-		$card = [
-			'myId'=> (string)((int)$_POST['pay_method_id']+1),
-			//'hash'=> '',
-			'number'=> $_POST['cardnum'],
-			'holder'=> $customer['name'],
-			'expiresAt'=> $_POST['expiresAt'],
-			'cvv'=> $_POST['cccvv'],
-		];
-	}
-	if(!$_POST['cardissuenum'] and (string)$_POST['storeCard'] === (string)'no'){
-		$card = [
-			//'myId'=> (string)((int)$_POST['pay_method_id']+1),
-			//'hash'=> '',
-			'number'=> $_POST['cardnum'],
-			'holder'=> $customer['name'],
-			'expiresAt'=> $_POST['expiresAt'],
-			'cvv'=> $_POST['cccvv'],
-		];
+	if(!$_POST['paymentToken'] and !empty($_POST['saved_token'])){
+		$paymentToken = $_POST['saved_token'];
 	}
 	$postfields = [
 		'items' => [[
@@ -73,7 +49,7 @@ if($_POST and !$_POST['error'] ){
 			  'phone_number'=>$customer['phone'],
 			],
 			'installments'=>(int)$_POST['installmentsnum'],
-			'payment_token'=>$_POST['paymentToken'],
+			'payment_token'=>$paymentToken,
 			'billing_address'=>[
 			  'street'=>$customer['address'],
 			  'number'=>$customer['number'],
@@ -88,7 +64,7 @@ if($_POST and !$_POST['error'] ){
 	  ];
 	$charge = gefic_charge($postfields);
 	// Capturado
-	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'captured'){
+	if( (string)$charge['result']['data']['status'] === (string)'approved'){
 		if( (int)$_POST['installmentsnum'] > 1 ){
 			$trans_desc = "Pagamento Aprovado - Parcelado em ".(int)$_POST['installmentsnum']."x R$".number_format( $_POST['amount'] / (int)$_POST['installmentsnum'] ,  2, ',', '.')." - ".$_POST['cardtype'].'-'.$_POST['cclastfour'];
 		}
@@ -102,20 +78,20 @@ if($_POST and !$_POST['error'] ){
 			$_POST['invoiceid'],
 			$_POST['amount'],
 			$fee,
-			'gefic-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
+			'gefic-'.$params_api['api_mode'].'-'.$charge['result']['data']['charge_id'],
 			$trans_desc
 			);	
 		if($gefic_add_trans['error']){
 			$error .= $gefic_add_trans['error'];
 		}
 		// save card
-		if((string)$_POST['storeCard'] === (string)'yes' and $charge['result']['Charge']['Transactions']['0']['CreditCard']['Card']['myId'] and !$_POST['cardissuenum']){
+		if((string)$_POST['storeCard'] === (string)'yes' and $paymentToken and !$_POST['saved_token']){
 			$card_to_add = [
 				'userid'=>$_POST['userid'],
 				'cclastfour'=>$_POST['cclastfour'],
 				'cardexp'=>$_POST['cardexp'],
 				'cardtype'=>$_POST['cardtype'],
-				'cardissuenum'=>$charge['result']['Charge']['Transactions']['0']['CreditCard']['Card']['galaxPayId'],//$_POST['issuenumber'],
+				'payment_token'=>$paymentToken,//$_POST['issuenumber'],
 				'myId'=> (string)((int)$_POST['pay_method_id']+1),
 			];
 			$gefic_add_card = gefic_card_add($card_to_add,$_POST['pay_method_id']);
@@ -123,16 +99,16 @@ if($_POST and !$_POST['error'] ){
 				$error .= $gefic_add_card;
 			}
 		}
-		if(((string)$_POST['storeCard'] !== (string)'yes' || (string)$gefic_add_card !== (string)'success') and !$_POST['cardissuenum']){
+		if(((string)$_POST['storeCard'] !== (string)'yes' || (string)$gefic_add_card !== (string)'success') and !$_POST['saved_token']){
 			$gefic_card_del = gefic_card_del($_POST['pay_method_id']);
 			if((string)$gefic_card_del !== (string)'success'){
 				$error .= $gefic_card_del;
 			}
 		}
 	}
-	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] !== (string)'captured'){
-		$error .= $charge['result']['Charge']['Transactions']['0']['statusDescription'];
-		if(!$_POST['cardissuenum']){
+	if( (string)$charge['result']['data']['status'] !== (string)'approved'){
+		$error .= $charge['result']['data']['status'];
+		if(!$_POST['saved_token']){
 			$gefic_card_del = gefic_card_del($_POST['pay_method_id']);
 			if((string)$gefic_card_del !== (string)'success'){
 				$error .= $gefic_card_del;
@@ -140,30 +116,21 @@ if($_POST and !$_POST['error'] ){
 		}
 	}
 	if($charge['result']['error']){
-		if(!$_POST['cardissuenum']){
+		if(!$_POST['saved_token']){
 			$gefic_card_del = gefic_card_del($_POST['pay_method_id']);
 			if((string)$gefic_card_del !== (string)'success'){
 				$error .= $gefic_card_del;
 			}
 		}
-		if( !empty($charge['result']['error']['message'])){
-			$error .= $charge['result']['error']['message'];
+		if( !empty($charge['result']['error_description']['property'])){
+			$error .= $charge['result']['error_description']['property'];
 		}
-		if(!empty($charge['result']['error']['details'])){
-			$error .= implode(', ',$charge['result']['error']['details']);
+		if(!empty($charge['result']['error_description']['message'])){
+			$error .= $charge['result']['error_description']['message'];
 		}
 	}
 	if($charge['result_code'] !== 200 ){
 		$error .= $charge['result_code'];
-	}
-}
-if($_POST['error']){
-	$error .= $_POST['error'];
-	if(!$_POST['cardissuenum'] and $_POST['pay_method_id']){
-		$gefic_card_del = gefic_card_del($_POST['pay_method_id']);
-		if((string)$gefic_card_del !== (string)'success'){
-			$error .= $gefic_card_del;
-		}
 	}
 }
 if($params['log']){	
@@ -181,34 +148,7 @@ if($params['log']){
 		 'gefic_card_del'=> $gefic_card_del,
 		 'error'=>$error,
 	];
-	if($log['post']['cardnum']){
-		$log['post']['cardnum'] = '1111 1111 1111 '.$_post['cclastfour'];
-	}
-	if($log['post']['expiresAt']){
-		$log['post']['expiresAt'] = 'xxxx-xx';
-	}
-	if($log['post']['cardexp']){
-		$log['post']['cardexp'] = 'xxxx';
-	}
-	if($log['post']['cccvv']){
-		$log['post']['cccvv'] = 'xxx';
-	}
-	if($log['postfields']['charge']['PaymentMethodCreditCard']['Card']['number']){
-		$log['postfields']['charge']['PaymentMethodCreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
-	}
-    if($log['postfields']['charge']['PaymentMethodCreditCard']['Card']['expiresAt']){
-		$log['postfields']['charge']['PaymentMethodCreditCard']['Card']['expiresAt'] = 'xxxx-xx';
-	}
-	if($log['postfields']['charge']['PaymentMethodCreditCard']['Card']['cvv']){
-    	$log['postfields']['charge']['PaymentMethodCreditCard']['Card']['cvv']= 'xxx';
-	}
-	if($log['charge']['result']['charge']['Transactions']['0']['CreditCard']['Card']['number']){
-		$log['charge']['result']['charge']['Transactions']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
-	}
-	if($log['charge']['result']['charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number']){
-		$log['charge']['result']['charge']['PaymentMethodCreditCard']['0']['CreditCard']['Card']['number'] = 'xxxx xxxx xxxx '.$_post['cclastfour'];
-	}
-	logModuleCall('gofaseficartao', 'iframe_payment', ['module_version'=>gefic_version(),'request'=>$log_request],'post',['response'=>$log_response],'replaceVars');
+	logModuleCall('gofaseficartao', 'iframe_payment', ['module_version'=>gefic_version(),$log_request],'post',[$charge],'replaceVars');
 }
 if(!$error){
 	$invoice_page =json_encode($geficwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
@@ -216,5 +156,5 @@ if(!$error){
 }
 if($error){
 	$invoice_page =json_encode($geficwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&geficerror='.$error);
-	//echo '<script>window.top.location.href='.$invoice_page.'</script>';
+	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }

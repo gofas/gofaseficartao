@@ -22,6 +22,4 @@
 **/
 
 // Card form
-$gn.ready(function (checkout) {
-	
-});
+$gn.ready(function (checkout) {});

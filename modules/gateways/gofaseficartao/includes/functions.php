@@ -145,6 +145,12 @@ if( !function_exists('gefic_card_add') ){
 		}
 		catch (\Exception $e){
 			$error .= $e->getMessage();
+		}
+		try {
+			Capsule::table('gofaseficartao')->where('pay_method_id','=',$pay_method_id)->delete();
+		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
 		}	
 		try {
 			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
@@ -153,14 +159,24 @@ if( !function_exists('gefic_card_add') ){
 				'111111111111'.$card['cclastfour'],
 				$card['cardexp'],
 				$card['cardtype'],
-				NULL, //start date
-				$card['cardissuenum'],//NULL, //issue number
-				$card['myId']
+				NULL,
+				NULL,
+				$card['payment_token']
 			);
 		}
 		catch (Exception $e){
 			$error .= $e->getMessage();
+		}////
+		try { Capsule::table('gofaseficartao')->insert(
+			[
+			'user_id' =>$card['userid'],
+			'pay_method_id' => $pay_method_id+1,
+			'payment_token' => $card['payment_token'],
+		]);
 		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
+		}/////
 		if($error){
 			gefic_card_del($card['myId']);
 			return $error;
@@ -182,6 +198,12 @@ if( !function_exists('gefic_card_del') ){
 		catch (\Exception $e){
 			$error .= $e->getMessage();
 		}
+		try {
+			Capsule::table('gofaseficartao')->where('pay_method_id','=',$pay_method_id)->delete();
+		}
+		catch (\Exception $e){
+			$error .= $e->getMessage();
+		}	
 		if($error){
 			return $error;
 		}
@@ -360,6 +382,8 @@ if(!function_exists('gefic_customer')){
 			'phone'=>preg_replace('/[^\da-z]/i', '', $client['phonenumber']),
 			'doc_type'=>$doc_type,
 			'document'=>$document,
+			'cpf'=>$cpf,
+			'cnpj'=>$cnpj,
 			'ie'=>$ie,
 			'issue_nfe'=>$issue_nfe,
 			'birthday'=>['raw'=>$birthday_raw,'br'=>$birthday_br,'us'=>$birthday_us],
@@ -620,16 +644,9 @@ if(!function_exists('gefic_verifyInstall')){
 				Capsule::schema()->create('gofaseficartao', function($table){
 					// incremented id
 					$table->increments('id');
-					   // whmcs info
-					$table->string('invoice_id');
-					$table->string('charge_id');
-					$table->string('link');
-					$table->string('pdf');
-					$table->string('expire_at');
-					$table->string('total');
-					$table->string('barcode');
-					$table->string('status');
-					$table->string('api_mode');
+					$table->string('user_id');
+					$table->string('pay_method_id');
+					$table->string('payment_token');
 				});
 			}
 			catch (\Exception $e){
