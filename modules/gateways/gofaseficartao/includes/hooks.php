@@ -409,13 +409,17 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 
 			////
 		$htmlOutput .= '<script type="text/javascript">
-			document.getElementById("btnCompleteOrder").disabled = true;
 			document.getElementById("inputCardNumber").addEventListener("keyup", gefic_cardNumber);
+			document.getElementById("inputCardCVV").addEventListener("keyup", gefic_cardNumber);
 			document.getElementById("inputCardCVV2").addEventListener("keyup", gefic_cardNumber);
 			document.getElementById("inputCardExpiry").addEventListener("keyup", gefic_cardNumber);
 			function gefic_cardNumber(){
+				document.getElementById("btnCompleteOrder").disabled = true;
 				var cardNumber = document.getElementById("inputCardNumber").value;
-				var CardCvv = document.getElementById("inputCardCVV2").value;
+				var CardCvv = document.getElementById("inputCardCVV").value;
+				if(CardCvv == "undefined"){
+					var CardCvv = document.getElementById("inputCardCVV2").value;
+				}
 				var CardExpiry = document.getElementById("inputCardExpiry").value.replace(/\D/g,"");
 				var mes_vencimento = (CardExpiry.substring(0,2));
 				if( CardExpiry.length == 4 ){
