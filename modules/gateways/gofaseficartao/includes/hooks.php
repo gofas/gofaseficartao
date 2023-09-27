@@ -563,3 +563,10 @@ add_hook('ClientAreaPaymentMethods', 1, function($vars){
 		'allowCreditCard'=>false,
 	);
 });
+add_hook('AdminInvoicesControlsOutput', 1, function($vars) {
+    $htmlOutput = '';
+    if ($vars['paymentmethod'] == 'gofaseficartao') {
+		//$htmlOutput .= '<style>#cardcvv, label[for=cardcvv] {display: none;}</style>';
+    }
+    return $htmlOutput;
+});

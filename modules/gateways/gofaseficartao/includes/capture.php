@@ -15,61 +15,65 @@ function gofaseficartao_capture($params){
 	}
 	$Params = json_decode( json_encode($params), true);
 	$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
+	foreach( Capsule::table('gofaseficartao') -> where('pay_method_id','=',$pay_method_id)->get(['payment_token']) as $saved_token_ ){
+		$saved_token					= $saved_token_->payment_token;
+	}
 	$params_api = gefic_api_connect();
-	$access_token_ = gefic_get_token();
-	$access_token = $access_token_['result']['access_token'];
 	$customer = gefic_customer($params['clientdetails']['userid']);
 	$GetInvoiceResults			= localAPI('getinvoice',array('invoiceid'=>$params['invoiceid'] ), (int)$params['admin'] );
 	$line_items = array();
 	foreach( $GetInvoiceResults['items']['item'] as $Value){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
-	$amount = ((int)$params['amount'])*100;
-	$postfields = array(
-		'access_token'=> $access_token,
-		'charge'=> [
-			'additionalInfo'=> substr( implode("\n",$line_items),  0, 400),
-			'myId'=> $params['invoiceid'].time(),
-			'value' => $amount,
-			'payday'=>date("Y-m-d"),
-			'payedOutsideEfí' => false,
-			'mainPaymentMethodId' => "creditcard",
-			'Customer' => [
-				'myId'=> $params['clientdetails']['userid'],
-				'name'=> $customer['name'],
-        		'document'=> $customer['document'],
-        		'emails'=> [
-        	    	$customer['email'],
-        		],
-        		'phones'=> [
-        	    	$customer['phone'],
-        		],
+	$amount = (int)preg_replace("/[^0-9]/", "", $params['amount']);
+	
+	$postfields = [
+		'items' => [[
+			'name'=>(string)(substr( implode("\n",$line_items),  0, 250)),
+			'value'=>$amount,
+			'amount'=>1
+		]],
+		'payment'=>[
+		  'credit_card'=>[
+			'customer'=>[
+			  'name'=>$customer['name'],
+			  'cpf'=>$customer['cpf'],
+			  'email'=>$customer['email'],
+			  'birth'=>$customer['birthday']['us'],
+			  'phone_number'=>$customer['phone'],
 			],
-    		'PaymentMethodCreditCard'=> [
-    		    'Card'=>[
-					'myId'=> $pay_method_id,
-				],
-			],
-    		'preAuthorize'=> false,
-    		'qtdInstallments'=> 1
-    	],
-	);
+			'installments'=> 1,
+			'payment_token'=>$saved_token,
+			'billing_address'=>[
+			  'street'=>$customer['address'],
+			  'number'=>$customer['number'],
+			  'neighborhood'=>$customer['neighborhood'],
+			  'zipcode'=>$customer['postcode'],
+			  'city'=>$customer['city'],
+			  'complement'=>$customer['complement'],
+			  'state'=>$customer['state']
+			]
+		  ]
+		]
+	  ];
 	$charge = gefic_charge($postfields);
+	logModuleCall('gofaseficartao', 'capture_payment', ['module_version'=>gefic_version(),$params,$_POST,$postfields],'post',[$charge],'replaceVars');
 	if( $charge['result']['error']){
-		$error .= $charge['result']['error']['message'];
-		$error .= implode(', ',$charge['result']['error']['details']);
+		if( !empty($charge['result']['error_description']['property'])){
+			$error .= $charge['result']['error_description']['property'];
+		}
+		if(!empty($charge['result']['error_description']['message'])){
+			$error .= $charge['result']['error_description']['message'];
+		}
 	}
-	if((string)$charge['result']['Charge']['Transactions']['0']['status'] !== (string)'captured'){
-		$error .= $charge['result']['Charge']['Transactions']['0']['statusDescription'] ;
-	}
-	if( (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'denied'){
+	if( (string)$charge['result']['data']['status'] !== (string)'approved'){
 		$declined = true;
 	}
-	if(!$error and (string)$charge['result']['Charge']['Transactions']['0']['status'] === (string)'captured'){
+	if((string)$charge['result']['data']['status'] === (string)'approved'){
 		$fee = (($params['amount'] * $params['fee']) / 100);
 		return array(
             'status' => 'success',
-            'transid' => 'gefic-'.$charge['result']['Charge']['galaxPayId'].'-'.$params_api['api_mode'].'-'.$charge['result']['Charge']['Transactions']['0']['galaxPayId'].'.',
+            'transid' => 'gefic-'.$params_api['api_mode'].'-'.$charge['result']['data']['charge_id'],
 			'fee' => $fee,
 			'gatewayid' => NULL,
 			'rawdata' => $charge
@@ -84,7 +88,7 @@ function gofaseficartao_capture($params){
 	if($declined){
 		return array(
                 'status' => 'declined',
-				'declinereason' => $charge['result']['Charge']['Transactions']['0']['statusDescription'],
+				'declinereason' => $charge['result']['error_description']['message'],
                 'rawdata' => $charge,
          );
 	}
