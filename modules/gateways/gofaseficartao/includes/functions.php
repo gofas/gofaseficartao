@@ -96,32 +96,7 @@ if( !function_exists('gefic_charge') ){
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-if( !function_exists('gefic_refund') ){
-	function gefic_refund($charge_id,$access_token){
-		$params_api = gefic_api_connect();
-		$curl = curl_init();
-		curl_setopt_array($curl, array(
-			CURLOPT_URL => $params_api['charge_url'].'/charges/'.$charge_id.'/galaxPayId/reverse',
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_ENCODING => '',
-			CURLOPT_MAXREDIRS => 10,
-			CURLOPT_TIMEOUT => 0,
-			CURLOPT_FOLLOWLOCATION => true,
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-			CURLOPT_CUSTOMREQUEST => 'PUT',
-			//CURLOPT_POSTFIELDS =>'[]',
-			CURLOPT_HTTPHEADER => array(
-			  'Authorization: Bearer '.$access_token,
-			  'AuthorizationPartner: '.base64_encode($params_api['galaxIdPartner'].':'. $params_api['galaxHashPartner']),
-			  'Content-Type: application/json'
-			),
-		  ));
-		$result = json_decode(curl_exec($curl),true);
-		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		return ['result_code'=>$result_code,'result'=>$result];
-	}
-}
+
 if( !function_exists('gefic_get_string_between') ){
 	function gefic_get_string_between($string, $start, $end){
 		$string = " ".$string;
@@ -713,3 +688,32 @@ if(!function_exists('gefic_setup_admin')){
 	}
 	return $admin;
 }}
+if(!function_exists('gefic_get_local_version')){
+	function gefic_get_local_version(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','gefic_version')->get(['value']) as $version_ ){
+		$version		= json_decode($version_->value, true);
+		$local_version			= $version['local_version'];
+	}
+	return $local_version;
+}}
+if(!function_exists('gefic_update_stats') ){
+	function gefic_update_stats(){
+		$params = getGatewayVariables('gofaseficartao');
+		if($params['sandbox']){
+			//return;
+		}
+		$whmcs_url = gefic_whmcs_url();
+		$setup_admin = gefic_setup_admin();
+		$query = '?software_id=8423&install_url='.$whmcs_url['admin_url'].'&current_version='.gefic_get_local_version().'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge'.gefic_sysinfo();
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
+		$response = curl_exec($curl);
+		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		$return = ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+		return $return;
+	}
+}

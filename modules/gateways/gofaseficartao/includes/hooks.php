@@ -160,7 +160,6 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
 		$htmlOutput .= '<script type="text/javascript">
 		document.addEventListener("DOMContentLoaded", gefic_on_load);
-		//window.onload = gefic_on_load();
 		function gefic_on_load(){
 			var cardType = "'.strtolower($vars_->existingCardType).'";
 			var total = '.(int)($vars_->invoice->model->total*100).';
@@ -231,6 +230,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 								if (brand !== "undefined") {
 									// Gerar o payment_token com a bandeira identificada
 										try {
+											document.getElementById("btnSubmit").disabled = true;
 											EfiJs.CreditCard
 												.setAccount("'.$params['identifier'].'")
 												.setEnvironment("'.$params_api['environment'].'") // "production" or "sandbox"
@@ -252,18 +252,11 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 													sessionStorage.setItem("paymentToken_",payment_token);
 													document.getElementById("btnSubmit").disabled = false;
 
-													//var input_payment_token = "<input type=hidden name=paymentToken id=paymentToken value="+payment_token+">";
-													//document.getElementById("frmPayment").insertAdjacentHTML("afterbegin",input_payment_token);
-
 												}).catch(err => {
-													console.log("Código: ", err.code);
-													console.log("Nome: ", err.error);
-													console.log("Mensagem: ", err.error_description);
+													alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
 												});
 										} catch (error) {
-											console.log("Código: ", error.code);
-											console.log("Nome: ", error.error);
-											console.log("Mensagem: ", error.error_description);
+											alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 										}
 									// Obtém opções de parcelamento
 									try {
@@ -281,27 +274,18 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
                 	            				}
                 	            				document.getElementById("installmentsSelect").innerHTML = opcoes;
 											}).catch(err => {
-												console.log("Código: ", err.code);
-												console.log("Nome: ", err.error);
-												console.log("Mensagem: ", err.error_description);
+												alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
 											});
-									}
-									catch (error) {
-										console.log("Código: ", error.code);
-										console.log("Nome: ", error.error);
-										console.log("Mensagem: ", error.error_description);
+									} catch (error) {
+										alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 									}
 								}
 							}).catch(err => {
-								console.log("Código: ", err.code);
-								console.log("Nome: ", err.error);
-								console.log("Mensagem: ", err.error_description);
+								//alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
 							});
 					}
 					catch (error) {
-						console.log("Código: ", error.code);
-						console.log("Nome: ", error.error);
-						console.log("Mensagem: ", error.error_description);
+						//alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 					}
 				}
 			}
@@ -367,6 +351,7 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 				document.addEventListener("DOMContentLoaded", gefic_on_load);
 				window.onload = gefic_on_load();
 				function gefic_on_load(){
+					document.getElementById("btnCompleteOrder").disabled = true;
 					var cardType = "'.strtolower($vars_->clientsdetails->cctype).'";
 					var total = '.(int)($vars_->rawtotal*100).';
 					var inputCardCVV2 = document.getElementById("inputCardCVV2").value;
@@ -392,15 +377,11 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 									sessionStorage.removeItem("paymentToken_");
 									document.getElementById("btnCompleteOrder").disabled = false;
 								}).catch(err => {
-									console.log("Código: ", err.code);
-									console.log("Nome: ", err.error);
-									console.log("Mensagem: ", err.error_description);
+									console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 								});
 						}
 						catch (error) {
-							console.log("Código: ", error.code);
-							console.log("Nome: ", error.error);
-							console.log("Mensagem: ", error.error_description);
+							console.log("Erro "+error.code+": "+ error.error+" "+error.error_description);
 						}
 					}
 				};
@@ -414,7 +395,6 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 			document.getElementById("inputCardCVV2").addEventListener("keyup", gefic_cardNumber);
 			document.getElementById("inputCardExpiry").addEventListener("keyup", gefic_cardNumber);
 			function gefic_cardNumber(){
-				document.getElementById("btnCompleteOrder").disabled = true;
 				var cardNumber = document.getElementById("inputCardNumber").value;
 				var CardCvv = document.getElementById("inputCardCVV").value;
 				if(CardCvv == "undefined"){
@@ -431,6 +411,7 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 				if(cardNumber.length>8 && CardCvv.length>2){
 					if(CardExpiry.length>3){
 						try {
+							document.getElementById("btnCompleteOrder").disabled = true;
 							console.log("cardNumber:"+cardNumber);
 							EfiJs.CreditCard
 								.setCardNumber(cardNumber)
@@ -463,14 +444,10 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 														var input_payment_token = "<input type=hidden name=paymentToken id=paymentToken value="+payment_token+">";
 														document.getElementById("frmPayment").insertAdjacentHTML("afterbegin",input_payment_token);
 													}).catch(err => {
-														console.log("Código: ", err.code);
-														console.log("Nome: ", err.error);
-														console.log("Mensagem: ", err.error_description);
+														console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 													});
 											} catch (error) {
-												console.log("Código: ", error.code);
-												console.log("Nome: ", error.error);
-												console.log("Mensagem: ", error.error_description);
+												alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 											}
 										// Obtém opções de parcelamento
 										if(payment_token !== "undefined"){
@@ -489,28 +466,20 @@ add_hook('ClientAreaPageCart', 1, function($vars){
         	        	            					}
         	        	            					document.getElementById("installmentsSelect").innerHTML = opcoes;
 													}).catch(err => {
-														console.log("Código: ", err.code);
-														console.log("Nome: ", err.error);
-														console.log("Mensagem: ", err.error_description);
+														console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 													});
 											}
 											catch (error) {
-												console.log("Código: ", error.code);
-												console.log("Nome: ", error.error);
-												console.log("Mensagem: ", error.error_description);
+												alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 											}
 										}
 									}
 								}).catch(err => {
-									console.log("Código: ", err.code);
-									console.log("Nome: ", err.error);
-									console.log("Mensagem: ", err.error_description);
+									//alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
 								});
 						}
 						catch (error) {
-							console.log("Código: ", error.code);
-							console.log("Nome: ", error.error);
-							console.log("Mensagem: ", error.error_description);
+							//alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 						}
 					}
 				}

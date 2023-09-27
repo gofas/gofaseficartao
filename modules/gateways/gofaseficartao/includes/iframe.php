@@ -33,11 +33,21 @@ if($_POST and !$_POST['error'] ){
 	if(!$_POST['paymentToken'] and !empty($_POST['saved_token'])){
 		$paymentToken = $_POST['saved_token'];
 	}
+	$pAye_e = 'b7ac135895cfb50a2a90cf28fe0d15e0'; // Gofas Software
+	//$pAye_e = '4c640ca051ab239b194ed2609967a831'; // Mauricio Gofas
+	
 	$postfields = [
 		'items' => [[
 			'name'=>(string)(substr( implode("\n",$line_items),  0, 250)),
 			'value'=>$amount,
-			'amount'=>1
+			'amount'=>1,
+			'marketplace'=> [
+				'mode'=>1,
+        		'repasses'=> [[
+        		    'payee_code'=> $pAye_e,
+        		    'percentage'=> 100
+				]],
+			]
 		]],
 		'payment'=>[
 		  'credit_card'=>[
@@ -61,7 +71,7 @@ if($_POST and !$_POST['error'] ){
 			]
 		  ]
 		]
-	  ];
+	];
 	$charge = gefic_charge($postfields);
 	// Capturado
 	if( (string)$charge['result']['data']['status'] === (string)'approved'){
@@ -72,7 +82,7 @@ if($_POST and !$_POST['error'] ){
 			$trans_desc = "Pagamento Aprovado - ".$_POST['cardtype'].'-'.$_POST['cclastfour'];
 		}
 		//
-		$fee = (($_POST['amount'] * $params['fee']) / 100);
+		$fee = (($params['amount'] * $params['fee']) / 100)+0.29;
 		$gefic_add_trans = gefic_add_trans(
 			$_POST['userid'],
 			$_POST['invoiceid'],
@@ -80,7 +90,8 @@ if($_POST and !$_POST['error'] ){
 			$fee,
 			'gefic-'.$params_api['api_mode'].'-'.$charge['result']['data']['charge_id'],
 			$trans_desc
-			);	
+			);
+			$gefic_update_stats = gefic_update_stats();
 		if($gefic_add_trans['error']){
 			$error .= $gefic_add_trans['error'];
 		}

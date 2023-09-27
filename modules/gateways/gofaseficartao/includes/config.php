@@ -186,7 +186,7 @@ if(!function_exists('gofaseficartao_config')){
 				'Type' => 'text',
 				'Default' => '4.99',
 				'Size' => '10',
-				'Description'       => '<span class="gefic_optional_txt">(Opcional)</span> Insira o valor percentual da comissão paga à Efí a cada transação via cartão com pagamento confirmado. Essa informação servirá para calcular e preencher o campo "Taxas" (fee) da lista de transações do WHMCS, já que a API Efí  não retorna essa informação. Use ponto(.) para separar casas decimais, ex.: 1.5',
+				'Description'    => '<span class="gefic_optional_txt">(Opcional)</span> Insira o valor percentual da comissão paga à Efí a cada transação via cartão com pagamento confirmado. Essa informação servirá para calcular e preencher o campo "Taxas" (fee) da lista de transações do WHMCS, já que a API Efí  não retorna essa informação. Use ponto(.) para separar casas decimais, ex.: 1.5',
 			),
 			'minimunamount' => array(
 				'FriendlyName' => $opt_num++.'- Valor mínimo',
@@ -194,13 +194,6 @@ if(!function_exists('gofaseficartao_config')){
 				'Size' => '10',
 				'Default' => '5',
 				'Description' => '<span class="gefic_optional_txt">(Opcional)</span> Insira o valor mínimo da fatura para permitir pagamento via cartão, 5 equivale à R$ 5,00. O valor mínimo padrão é R$5,00.',
-			),
-			// mostrar opção de assinatura na fatura
-			'showsubscribeoption' => array(
-				'FriendlyName' => $opt_num++.'- Exibir "salvar cartão" na fatura',
-				'Type' => 'yesno',
-				//'Default' => 'no',
-				'Description' => '<span class="gefic_optional_txt">(Opcional)</span> Exibe campo na fatura onde o cliente pode optar por criar uma assinatura. Salva o cartão nos servidores Gerencianet para cobrança recorrente.',
 			),
 			// Permitir Parcelamento
 			'installments' => array(
