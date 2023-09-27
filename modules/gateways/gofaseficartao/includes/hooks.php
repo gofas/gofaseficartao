@@ -156,9 +156,37 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 			$geficwhmcsurl					= $geficwhmcsurl_->value;
 			$geficwhmcsurl_created_at		= $geficwhmcsurl_->created_at;
 		}
-		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
-		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
-		$htmlOutput .= '<script type="text/javascript">
+		$htmlOutput .= $params_api['javascript'];
+		
+		if($params['minimunamountinstallments']){
+			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
+		}
+		elseif(!$params['minimunamountinstallments']){
+			$minimunamountinstallments = (float)'100.00';
+		}
+		if($params['installments'] and ( (float)$minimunamountinstallments <= (float)$vars_->invoice->model->total) ){
+			$htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="yes" />';
+			$htmlOutput .= '<script>sessionStorage.setItem("installment_", "yes");</script>';
+			$options_installments .= '<label style="float:left;" class="col-sm-4 control-label">Parcelamento</label><div class="col-sm-6" style="margin-bottom: 20px; float:left;">';
+			$options_installments .= '<select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
+			$options_installments .= '<option value=1>Digite o cartão para ver as opções</option>'; 
+			$options_installments .= '</select></div>';
+			 $htmlOutput .= "<script>
+			 	if(document.getElementById('installment_').value == 'yes'){
+					var options_installments = '".$options_installments."';	
+					document.getElementById('btnSubmit').insertAdjacentHTML('beforebegin',options_installments);
+				}
+			 </script>";
+			 $htmlOutput .= "<script>
+			 	if(document.getElementById('installment_').value == 'yes'){
+					var sel = document.getElementById('installmentsSelect');
+					sel.addEventListener('change', function (){
+								sessionStorage.setItem('installments_', sel.value);
+						console.log(sel.value);
+	 					 });
+				}
+			 </script>";
+			 $htmlOutput .= '<script type="text/javascript">
 		document.addEventListener("DOMContentLoaded", gefic_on_load);
 		function gefic_on_load(){
 			var cardType = "'.strtolower($vars_->existingCardType).'";
@@ -200,10 +228,16 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 				}
 			}
 		};
+		</script>';
+		}
+		else {
+			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
+		}
+		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
 		
-		////
 		
-		document.getElementById("btnSubmit").disabled = true;
+		$htmlOutput .= '<script type="text/javascript">
 		document.getElementById("inputCardNumber").addEventListener("keyup", gefic_cardNumber);
 		document.getElementById("inputCardCvv").addEventListener("keyup", gefic_cardNumber);
 		document.getElementById("inputCardExpiry").addEventListener("keyup", gefic_cardNumber);
@@ -221,6 +255,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 			if(cardNumber.length>8 && CardCvv.length>2){
 				if(CardExpiry.length>3){
 					try {
+						document.getElementById("btnSubmit").disabled = true;
 						console.log("cardNumber:"+cardNumber);
 						EfiJs.CreditCard
 							.setCardNumber(cardNumber)
@@ -253,7 +288,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 													document.getElementById("btnSubmit").disabled = false;
 
 												}).catch(err => {
-													alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
+													console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 												});
 										} catch (error) {
 											alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
@@ -274,57 +309,24 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
                 	            				}
                 	            				document.getElementById("installmentsSelect").innerHTML = opcoes;
 											}).catch(err => {
-												alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
+												console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 											});
 									} catch (error) {
 										alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 									}
 								}
 							}).catch(err => {
-								//alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
+								console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 							});
 					}
 					catch (error) {
-						//alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
+						console.log("Erro "+error.code+": "+ error.error+" "+error.error_description);
 					}
 				}
 			}
 		}
 		</script>';
-		$htmlOutput .= $params_api['javascript'];
 		
-		if($params['minimunamountinstallments']){
-			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
-		}
-		elseif(!$params['minimunamountinstallments']){
-			$minimunamountinstallments = (float)'100.00';
-		}
-		if($params['installments'] and ( (float)$minimunamountinstallments <= (float)$vars_->invoice->model->total) ){
-		$htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="yes" />';
-		$htmlOutput .= '<script>sessionStorage.setItem("installment_", "yes");</script>';
-		$options_installments .= '<label style="float:left;" class="col-sm-4 control-label">Parcelamento</label><div class="col-sm-6" style="margin-bottom: 20px; float:left;">';
-		$options_installments .= '<select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
-		$options_installments .= '<option value=1>Digite o cartão para ver as opções</option>'; 
-		$options_installments .= '</select></div>';
-		 $htmlOutput .= "<script>
-		 	if(document.getElementById('installment_').value == 'yes'){
-				var options_installments = '".$options_installments."';	
-				document.getElementById('btnSubmit').insertAdjacentHTML('beforebegin',options_installments);
-			}
-		 </script>";
-		 $htmlOutput .= "<script>
-		 	if(document.getElementById('installment_').value == 'yes'){
-				var sel = document.getElementById('installmentsSelect');
-				sel.addEventListener('change', function (){
-							sessionStorage.setItem('installments_', sel.value);
-					console.log(sel.value);
-	 				 });
-			}
-		 </script>";
-		}
-		else {
-			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
-		}
 		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofaseficartao/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
