@@ -11,4 +11,3 @@ require_once __DIR__.'/includes/hooks.php';
 require_once __DIR__.'/includes/config.php';
 require_once __DIR__.'/includes/3dsecure.php';
 require_once __DIR__.'/includes/capture.php';
-require_once __DIR__.'/includes/refund.php';

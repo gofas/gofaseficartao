@@ -17,7 +17,6 @@ if($_POST and !$_POST['error'] ){
 	$params = getGatewayVariables('gofaseficartao');
 	$params_api = gefic_api_connect();
 	$customer = gefic_customer($_POST['userid']);
-	$geficwhmcsurl = gefic_whmcs_url('whmcs_url');
 	$access_token_ = gefic_get_token();
 	$access_token = $access_token_['result']['access_token'];
 	// Invoice Info
@@ -162,10 +161,10 @@ if($params['log']){
 	logModuleCall('gofaseficartao', 'iframe_payment', ['module_version'=>gefic_version(),$log_request],'post',[$charge],'replaceVars');
 }
 if(!$error){
-	$invoice_page =json_encode($geficwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
+	$invoice_page =json_encode(gefic_whmcs_url('whmcs_url').'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentsuccess=true');
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }
 if($error){
-	$invoice_page =json_encode($geficwhmcsurl.'/viewinvoice.php?id='.$_POST['invoiceid'].'&geficerror='.$error);
+	$invoice_page =json_encode(gefic_whmcs_url('whmcs_url').'/viewinvoice.php?id='.$_POST['invoiceid'].'&geficerror='.$error);
 	echo '<script>window.top.location.href='.$invoice_page.'</script>';
 }

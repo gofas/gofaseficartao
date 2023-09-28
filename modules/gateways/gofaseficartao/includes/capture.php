@@ -10,9 +10,6 @@
 use WHMCS\Database\Capsule;
 function gofaseficartao_capture($params){
 	require __DIR__.'/functions.php';
-	foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'geficwhmcsurl') -> get( array( 'value','created_at') ) as $geficwhmcsurl_ ){
-		$geficwhmcsurl					= $geficwhmcsurl_->value;
-	}
 	$Params = json_decode( json_encode($params), true);
 	$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
 	foreach( Capsule::table('gofaseficartao') -> where('pay_method_id','=',$pay_method_id)->get(['payment_token']) as $saved_token_ ){
@@ -26,8 +23,8 @@ function gofaseficartao_capture($params){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
 	$amount = (int)preg_replace("/[^0-9]/", "", $params['amount']);
-	//$pAye_e = 'b7ac135895cfb50a2a90cf28fe0d15e0'; // Gofas Software
-	$pAye_e = '4c640ca051ab239b194ed2609967a831'; // Mauricio Gofas
+	$pAye_e = 'b7ac135895cfb50a2a90cf28fe0d15e0'; // Gofas Software
+	//$pAye_e = '4c640ca051ab239b194ed2609967a831'; // Mauricio Gofas
 	
 	$postfields = [
 		'items' => [[

@@ -151,13 +151,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 		require_once __DIR__.'/functions.php';
 		$params_api = gefic_api_connect();
 		$vars_ = json_decode(json_encode($vars));
-		//echo '<pre>',print_r($vars_),'</pre>';
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'geficwhmcsurl') -> get( array( 'value','created_at') ) as $geficwhmcsurl_ ){
-			$geficwhmcsurl					= $geficwhmcsurl_->value;
-			$geficwhmcsurl_created_at		= $geficwhmcsurl_->created_at;
-		}
 		$htmlOutput .= $params_api['javascript'];
-		
 		if($params['minimunamountinstallments']){
 			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
 		}
@@ -233,8 +227,8 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 		else {
 			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
 		}
-		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
-		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
 		
 		
 		$htmlOutput .= '<script type="text/javascript">
@@ -341,13 +335,8 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 		require_once __DIR__.'/functions.php';
 		$params_api = gefic_api_connect();
 		$vars_ = json_decode(json_encode($vars));
-		//echo '<pre>',print_r($vars_),'</pre>';
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'geficwhmcsurl') -> get( array( 'value','created_at') ) as $geficwhmcsurl_ ){
-			$geficwhmcsurl					= $geficwhmcsurl_->value;
-			$geficwhmcsurl_created_at		= $geficwhmcsurl_->created_at;
-		}
-		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
-		$htmlOutput .= '<script type="module" src="'.$geficwhmcsurl.'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
+		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
 		if(!empty($vars_->clientsdetails->cctype)){
 			$htmlOutput .= '<script type="text/javascript">
 				document.addEventListener("DOMContentLoaded", gefic_on_load);
