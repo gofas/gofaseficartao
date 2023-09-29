@@ -206,8 +206,8 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
         	    			}
         	    			document.getElementById("installmentsSelect").innerHTML = opcoes;
 							document.getElementById("btnSubmit").disabled = false;
-							document.getElementById("btnSubmit").innerHTML = "Enviar Pagamento";
 							sessionStorage.removeItem("paymentToken_");
+							document.getElementById("btnSubmit").disabled = false;
 
 						}).catch(err => {
 							console.log("Código: ", err.code);
@@ -250,7 +250,6 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 				if(CardExpiry.length>3){
 					try {
 						document.getElementById("btnSubmit").disabled = true;
-						document.getElementById("btnSubmit").innerHTML = "Aguarde um momento...";
 						console.log("cardNumber:"+cardNumber);
 						EfiJs.CreditCard
 							.setCardNumber(cardNumber)
@@ -261,7 +260,6 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 									// Gerar o payment_token com a bandeira identificada
 										try {
 											document.getElementById("btnSubmit").disabled = true;
-											document.getElementById("btnSubmit").innerHTML = "Aguarde um momento...";
 											EfiJs.CreditCard
 												.setAccount("'.$params['identifier'].'")
 												.setEnvironment("'.$params_api['environment'].'") // "production" or "sandbox"
@@ -282,7 +280,6 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 													
 													sessionStorage.setItem("paymentToken_",payment_token);
 													document.getElementById("btnSubmit").disabled = false;
-													document.getElementById("btnSubmit").innerHTML = "Enviar Pagamento";
 
 												}).catch(err => {
 													console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
@@ -346,7 +343,6 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 				window.onload = gefic_on_load();
 				function gefic_on_load(){
 					document.getElementById("btnCompleteOrder").disabled = true;
-					document.getElementById("btnCompleteOrder").innerHTML = "Aguarde um momento...";
 					var cardType = "'.strtolower($vars_->clientsdetails->cctype).'";
 					var total = '.(int)($vars_->rawtotal*100).';
 					var inputCardCVV2 = document.getElementById("inputCardCVV2").value;
@@ -369,8 +365,8 @@ add_hook('ClientAreaPageCart', 1, function($vars){
         			    			}
         			    			document.getElementById("installmentsSelect").innerHTML = opcoes;
 									document.getElementById("btnCompleteOrder").disabled = false;
-									document.getElementById("btnCompleteOrder").innerHTML = "Enviar Pagamento";
 									sessionStorage.removeItem("paymentToken_");
+									document.getElementById("btnCompleteOrder").disabled = false;
 								}).catch(err => {
 									console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
 								});
@@ -407,7 +403,6 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 					if(CardExpiry.length>3){
 						try {
 							document.getElementById("btnCompleteOrder").disabled = true;
-							document.getElementById("btnCompleteOrder").innerHTML = "Aguarde um momento...";
 							console.log("cardNumber:"+cardNumber);
 							EfiJs.CreditCard
 								.setCardNumber(cardNumber)
@@ -437,7 +432,6 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 
 														sessionStorage.setItem("paymentToken_",payment_token);
 														document.getElementById("btnCompleteOrder").disabled = false;
-														document.getElementById("btnCompleteOrder").innerHTML = "Enviar Pagamento";
 														var input_payment_token = "<input type=hidden name=paymentToken id=paymentToken value="+payment_token+">";
 														document.getElementById("frmPayment").insertAdjacentHTML("afterbegin",input_payment_token);
 													}).catch(err => {
