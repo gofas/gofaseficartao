@@ -132,7 +132,7 @@ add_hook('ClientAreaPage', 1, function($vars) {
 add_hook('ClientAreaPageViewInvoice', 1, function($vars){
 	if($_REQUEST['geficerror']){
 		echo '
-		<div class="row w-100 mx-auto mb-3" style="max-width: 850px;margin: 15px 0px;">
+		<div class="row w-100 mx-auto mb-3" style="max-width: 850px;margin: 15px auto;">
 			<div class="card w-100">
 				<div class="card-title py-1 px-2 text-white font-weight-bold bg-danger" style="text-align: center;">
 					Erro: '.$_REQUEST['geficerror'].'
