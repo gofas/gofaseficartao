@@ -574,7 +574,8 @@ if(!function_exists('gefic_verify_module_updates')){
 			'error' => $error,
 		];
 	}
-}if(!function_exists('gefic_version')){
+}
+if(!function_exists('gefic_version')){
 	function gefic_version($opt=1){
 		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gefic_version') -> get( array( 'value','created_at') ) as $gefic_version_ ){
 			$gefic_version				= $gefic_version_->value;
@@ -714,6 +715,7 @@ if(!function_exists('gefic_update_stats') ){
 		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 		$return = ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+		logModuleCall('gofaseficartao', 'capture_stats', ['module_version'=>gefic_version(),$query],'post',$return,'replaceVars');
 		return $return;
 	}
 }

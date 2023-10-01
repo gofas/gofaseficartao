@@ -76,8 +76,8 @@ function gofaseficartao_capture($params){
 		$declined = true;
 	}
 	if((string)$charge['result']['data']['status'] === (string)'approved'){
-		$gefic_update_stats = gefic_update_stats();
 		$fee = (($params['amount'] * $params['fee']) / 100)+0.29;
+		$gefic_update_stats = gefic_update_stats();
 		return array(
             'status' => 'success',
             'transid' => 'gefic-'.$params_api['api_mode'].'-'.$charge['result']['data']['charge_id'],
