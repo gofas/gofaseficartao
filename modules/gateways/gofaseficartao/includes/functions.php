@@ -701,7 +701,7 @@ if(!function_exists('gefic_update_stats') ){
 	function gefic_update_stats(){
 		$params = getGatewayVariables('gofaseficartao');
 		if($params['sandbox']){
-			//return;
+			return;
 		}
 		$whmcs_url = gefic_whmcs_url();
 		$setup_admin = gefic_setup_admin();
