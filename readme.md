@@ -11,7 +11,7 @@
 
 **Closed issues:**
 
-- Lançamento 🎉 [\#3](https://github.com/mauriciogofas/gofaseficartao/issues/3)
+- 🎉 v4.0.0 \(Substitui o antigo módulo Gerencianet cartão para WHMCS\) [\#3](https://github.com/mauriciogofas/gofaseficartao/issues/3)
 
 
 
