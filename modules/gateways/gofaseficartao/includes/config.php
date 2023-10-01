@@ -220,23 +220,9 @@ if(!function_exists('gofaseficartao_config')){
 				</p>
 				'.$check_updates['message'].'
 				</div>',
-			),);
-			if(file_exists(__DIR__.'/custom/config.php')){
-				include __DIR__.'/custom/config.php';
-				if(is_array($gefic_custom_config) and is_array($renderize) and is_array($footer)){
-					$separator_custom = ['separator_custom' => [
-						'Description' => '
-							<div class="gefic_separator">
-								<h4>Configurações personalizadas</h4>
-							</div>',
-						],
-					];
-					$gefic_config = array_merge($renderize,$separator_custom,$gefic_custom_config,$footer);
-				}
-			}
-			if(!file_exists(__DIR__.'/custom/config.php') || !$gefic_custom_config and (is_array($renderize) and is_array($footer))){
-				$gefic_config = array_merge($renderize,$footer);
-			}
-			return $gefic_config;
+			),
+		);
+		$gefic_config = array_merge($renderize,$footer);
+		return $gefic_config;
 	}
 }

@@ -33,8 +33,6 @@ if($_POST and !$_POST['error'] ){
 		$paymentToken = $_POST['saved_token'];
 	}
 	$pAye_e = 'b7ac135895cfb50a2a90cf28fe0d15e0'; // Gofas Software
-	//$pAye_e = '4c640ca051ab239b194ed2609967a831'; // Mauricio Gofas
-	
 	$postfields = [
 		'items' => [[
 			'name'=>(string)(substr( implode("\n",$line_items),  0, 250)),
@@ -80,7 +78,6 @@ if($_POST and !$_POST['error'] ){
 		else {
 			$trans_desc = "Pagamento Aprovado - ".$_POST['cardtype'].'-'.$_POST['cclastfour'];
 		}
-		//
 		$fee = (($params['amount'] * $params['fee']) / 100)+0.29;
 		$gefic_add_trans = gefic_add_trans(
 			$_POST['userid'],

@@ -17,11 +17,9 @@ function gofaseficartao_3dsecure($params){
 		$params_api = gefic_api_connect();
 		$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
 		$invoice_duedate = $params['duedate'];
-		
 		foreach( Capsule::table('gofaseficartao') -> where('pay_method_id','=',$pay_method_id)->get(['payment_token']) as $saved_token_ ){
 			$saved_token					= $saved_token_->payment_token;
 		}
-
 		$customer = gefic_customer($params['clientdetails']['id']);
 		$postfields = array(
 				'userid'=>$params['clientdetails']['id'],
@@ -43,7 +41,6 @@ function gofaseficartao_3dsecure($params){
 			//$htmlOutput .= '<input type="hidden" name="saved_token" id="saved_token" value="'.$saved_token.'" />';
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
 			$htmlOutput .= '<input type="hidden" name="identificadorConta" id="identificadorConta" value="'.$params['identifier'].'" />';
-			
     		$htmlOutput .= '</form>';
 			$htmlOutput .= $params_api['javascript'];
 			$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';

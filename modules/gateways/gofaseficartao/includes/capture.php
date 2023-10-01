@@ -23,9 +23,7 @@ function gofaseficartao_capture($params){
 		$line_items[]	= substr( $Value['description'],  0, 80).' | R$ '.number_format( $Value['amount'],  2, ',', '.');	
 	}
 	$amount = (int)preg_replace("/[^0-9]/", "", $params['amount']);
-	$pAye_e = 'b7ac135895cfb50a2a90cf28fe0d15e0'; // Gofas Software
-	//$pAye_e = '4c640ca051ab239b194ed2609967a831'; // Mauricio Gofas
-	
+	$pAye_e = 'b7ac135895cfb50a2a90cf28fe0d15e0';
 	$postfields = [
 		'items' => [[
 			'name'=>(string)(substr( implode("\n",$line_items),  0, 250)),
