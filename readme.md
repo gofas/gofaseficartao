@@ -6,12 +6,9 @@
 
 **Implemented enhancements:**
 
+- 🎉 v4.0.0 \(Substitui o antigo módulo Gerencianet cartão para WHMCS\) [\#3](https://github.com/mauriciogofas/gofaseficartao/issues/3)
 - Opções de parcelamento para cartão salvo [\#2](https://github.com/mauriciogofas/gofaseficartao/issues/2)
 - função para calcular tarifa aplicada às transações [\#1](https://github.com/mauriciogofas/gofaseficartao/issues/1)
-
-**Closed issues:**
-
-- 🎉 v4.0.0 \(Substitui o antigo módulo Gerencianet cartão para WHMCS\) [\#3](https://github.com/mauriciogofas/gofaseficartao/issues/3)
 
 
 
