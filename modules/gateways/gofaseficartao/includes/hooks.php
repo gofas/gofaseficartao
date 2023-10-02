@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=8423
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=8343
- * @version		4.0.0
+ * @version		4.0.1
  */
 use WHMCS\Database\Capsule;
 add_hook('ClientAreaPage', 1, function($vars) {
@@ -285,7 +285,7 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 													document.getElementById("btnSubmit").innerHTML = "Enviar Pagamento";
 
 												}).catch(err => {
-													console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
+													console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 												});
 										} catch (error) {
 											alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
@@ -306,18 +306,18 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
                 	            				}
                 	            				document.getElementById("installmentsSelect").innerHTML = opcoes;
 											}).catch(err => {
-												console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
+												console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 											});
 									} catch (error) {
 										alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 									}
 								}
 							}).catch(err => {
-								console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
+								console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 							});
 					}
 					catch (error) {
-						console.log("Erro "+error.code+": "+ error.error+" "+error.error_description);
+						console.log("Erro ('.__LINE__.') "+error.code+": "+ error.error+" "+error.error_description);
 					}
 				}
 			}
@@ -372,18 +372,16 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 									document.getElementById("btnCompleteOrder").innerHTML = "Enviar Pagamento";
 									sessionStorage.removeItem("paymentToken_");
 								}).catch(err => {
-									console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
+									console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 								});
 						}
 						catch (error) {
-							console.log("Erro "+error.code+": "+ error.error+" "+error.error_description);
+							console.log("Erro ('.__LINE__.') "+error.code+": "+ error.error+" "+error.error_description);
 						}
 					}
 				};
 			</script>';
 		}
-
-			////
 		$htmlOutput .= '<script type="text/javascript">
 			document.getElementById("inputCardNumber").addEventListener("keyup", gefic_cardNumber);
 			document.getElementById("inputCardCVV").addEventListener("keyup", gefic_cardNumber);
@@ -438,16 +436,16 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 														sessionStorage.setItem("paymentToken_",payment_token);
 														document.getElementById("btnCompleteOrder").disabled = false;
 														document.getElementById("btnCompleteOrder").innerHTML = "Enviar Pagamento";
-														var input_payment_token = "<input type=hidden name=paymentToken id=paymentToken value="+payment_token+">";
-														document.getElementById("frmPayment").insertAdjacentHTML("afterbegin",input_payment_token);
+														//var input_payment_token = "<input type=hidden name=paymentToken id=paymentToken value="+payment_token+">";
+														//document.getElementById("frmPayment").insertAdjacentHTML("afterbegin",input_payment_token);
 													}).catch(err => {
-														console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
+														console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 													});
 											} catch (error) {
 												alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
 											}
 										// Obtém opções de parcelamento
-										if(payment_token !== "undefined"){
+										if(brand !== "undefined"){
 											try {
 												EfiJs.CreditCard
 													.setAccount("'.$params['identifier'].'")
@@ -463,7 +461,7 @@ add_hook('ClientAreaPageCart', 1, function($vars){
         	        	            					}
         	        	            					document.getElementById("installmentsSelect").innerHTML = opcoes;
 													}).catch(err => {
-														console.log("Erro "+err.code+": "+ err.error+" "+err.error_description);
+														console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 													});
 											}
 											catch (error) {
@@ -472,11 +470,11 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 										}
 									}
 								}).catch(err => {
-									//alert("Erro "+err.code+": "+ err.error+" "+err.error_description);
+									//alert("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 								});
 						}
 						catch (error) {
-							//alert("Erro "+error.code+": "+ error.error+" "+error.error_description);
+							//alert("Erro ('.__LINE__.') "+error.code+": "+ error.error+" "+error.error_description);
 						}
 					}
 				}
