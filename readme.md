@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mauriciogofas/gofaseficartao/tree/HEAD)
+## [v4.0.2](https://github.com/mauriciogofas/gofaseficartao/tree/v4.0.2) (05/10/2023)
 
-[Full Changelog](https://github.com/mauriciogofas/gofaseficartao/compare/v4.0.1...HEAD)
+[Full Changelog](https://github.com/mauriciogofas/gofaseficartao/compare/v4.0.1...v4.0.2)
 
 **Fixed bugs:**
 
