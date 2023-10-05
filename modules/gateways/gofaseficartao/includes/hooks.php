@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=8423
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=8343
- * @version		4.0.1
+ * @version		4.0.2
  */
 use WHMCS\Database\Capsule;
 add_hook('ClientAreaPage', 1, function($vars) {
@@ -165,13 +165,13 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 			$options_installments .= '<select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
 			$options_installments .= '<option value=1>Digite o cartão para ver as opções</option>'; 
 			$options_installments .= '</select></div>';
-			 $htmlOutput .= "<script>
+			$htmlOutput .= "<script>
 			 	if(document.getElementById('installment_').value == 'yes'){
 					var options_installments = '".$options_installments."';	
 					document.getElementById('btnSubmit').insertAdjacentHTML('beforebegin',options_installments);
 				}
-			 </script>";
-			 $htmlOutput .= "<script>
+			</script>";
+			$htmlOutput .= "<script>
 			 	if(document.getElementById('installment_').value == 'yes'){
 					var sel = document.getElementById('installmentsSelect');
 					sel.addEventListener('change', function (){
@@ -179,58 +179,14 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 						console.log(sel.value);
 	 					 });
 				}
-			 </script>";
-			 $htmlOutput .= '<script type="text/javascript">
-		document.addEventListener("DOMContentLoaded", gefic_on_load);
-		function gefic_on_load(){
-			var cardType = "'.strtolower($vars_->existingCardType).'";
-			var total = '.(int)($vars_->invoice->model->total*100).';
-			var inputCardCvv = document.getElementById("inputCardCvv").value;
-			console.log("cardType: "+cardType);
-			console.log("total: "+total);
-			
-			if (cardType !== "undefined") {
-				// Obtém opções de parcelamento
-				try {
-					EfiJs.CreditCard
-						.setAccount("'.$params['identifier'].'")
-						.setEnvironment("'.$params_api['environment'].'") // "production" or "sandbox"
-						.setBrand(cardType)
-						.setTotal(total)
-						.getInstallments()
-						.then(installments => {
-							console.log("Parcelas", installments);
-							let opcoes = "<option value=1>1 x de R$'.number_format($vars_->invoice->model->total,  2, ',', '.').' sem juros</option>";
-        	    			for (let index = 1; index < installments.installments.length; index++) {
-        	    			    opcoes += `<option value="${installments.installments[index].installment}">${installments.installments[index].installment} x de R$${installments.installments[index].currency} ${installments.installments[index].has_interest === false ? "sem juros" : ""}</option>`;
-        	    			}
-        	    			document.getElementById("installmentsSelect").innerHTML = opcoes;
-							document.getElementById("btnSubmit").disabled = false;
-							document.getElementById("btnSubmit").innerHTML = "Enviar Pagamento";
-							sessionStorage.removeItem("paymentToken_");
-
-						}).catch(err => {
-							console.log("Código: ", err.code);
-							console.log("Nome: ", err.error);
-							console.log("Mensagem: ", err.error_description);
-						});
-				}
-				catch (error) {
-					console.log("Código: ", error.code);
-					console.log("Nome: ", error.error);
-					console.log("Mensagem: ", error.error_description);
-				}
-			}
-		};
-		</script>';
+			</script>";
 		}
 		else {
 			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
 		}
+		
 		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
 		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
-		
-		
 		$htmlOutput .= '<script type="text/javascript">
 		document.getElementById("inputCardNumber").addEventListener("keyup", gefic_cardNumber);
 		document.getElementById("inputCardCvv").addEventListener("keyup", gefic_cardNumber);
@@ -323,7 +279,50 @@ add_hook('ClientAreaPageCreditCardCheckout', 1, function($vars){
 			}
 		}
 		</script>';
-		
+		$htmlOutput .= '<script type="text/javascript">
+			document.addEventListener("DOMContentLoaded", gefic_on_load);
+			function gefic_on_load(){
+				var cardType = "'.strtolower($vars_->existingCardType).'";
+				var total = '.(int)($vars_->invoice->model->total*100).';
+				var inputCardCvv = document.getElementById("inputCardCvv").value;
+				console.log("cardType: "+cardType);
+				console.log("total: "+total);
+				if (cardType !== "undefined") {
+					// Obtém opções de parcelamento
+					try {
+						EfiJs.CreditCard
+							.setAccount("'.$params['identifier'].'")
+							.setEnvironment("'.$params_api['environment'].'") // "production" or "sandbox"
+							.setBrand(cardType)
+							.setTotal(total)
+							.getInstallments()
+							.then(installments => {
+								console.log("Parcelas", installments);
+								let opcoes = "<option value=1>1 x de R$'.number_format($vars_->invoice->model->total,  2, ',', '.').' sem juros</option>";
+        		    			for (let index = 1; index < installments.installments.length; index++) {
+        		    			    opcoes += `<option value="${installments.installments[index].installment}">${installments.installments[index].installment} x de R$${installments.installments[index].currency} ${installments.installments[index].has_interest === false ? "sem juros" : ""}</option>`;
+        		    			}
+        		    			document.getElementById("installmentsSelect").innerHTML = opcoes;
+								document.getElementById("btnSubmit").disabled = false;
+								document.getElementById("btnSubmit").innerHTML = "Enviar Pagamento";
+								sessionStorage.removeItem("paymentToken_");
+
+							}).catch(err => {
+								sessionStorage.removeItem("paymentToken_");
+								console.log("Código: ", err.code);
+								console.log("Nome: ", err.error);
+								console.log("Mensagem: ", err.error_description);
+							});
+					}
+					catch (error) {
+						console.log("Código: ", error.code);
+						console.log("Nome: ", error.error);
+						console.log("Mensagem: ", error.error_description);
+					}
+				}
+			};
+		</script>';
+
 		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofaseficartao/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
@@ -340,10 +339,42 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 		$vars_ = json_decode(json_encode($vars));
 		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
 		$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
+		if($params['minimunamountinstallments']){
+			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
+		}
+		elseif(!$params['minimunamountinstallments']){
+			$minimunamountinstallments = (float)'100.00';
+		}
+		if($params['installments'] and ( (float)$minimunamountinstallments <= (float)$vars_->rawtotal) ){
+			$htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="yes" />';
+			$htmlOutput .= '<script>sessionStorage.setItem("installment_", "yes");</script>';
+			$options_installments .= '<label style="margin-top:10px;" class="col-sm-4 control-label">Parcelamento</label>';
+			$options_installments .= '<div class="col-sm-6" style="margin: 0px 0px 20px 0px;max-width:100%;">';
+			$options_installments .= '<select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
+			$options_installments .= '<option value=1>Digite o cartão para ver as opções</option>'; 
+			$options_installments .= '</select></div>';
+			$htmlOutput .= "<script>
+			 	if(document.getElementById('installment_').value == 'yes'){
+					var options_installments = '".$options_installments."';	
+					document.getElementById('creditCardInputFields').insertAdjacentHTML('beforeend',options_installments);
+				}
+			</script>";
+			$htmlOutput .= "<script>
+			 	if(document.getElementById('installment_').value == 'yes'){
+					var sel = document.getElementById('installmentsSelect');
+					sel.addEventListener('change', function (){
+								sessionStorage.setItem('installments_', sel.value);
+						console.log(sel.value);
+	 					 });
+			}
+			</script>";
+		}
+		else {
+			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
+		}
 		if(!empty($vars_->clientsdetails->cctype)){
 			$htmlOutput .= '<script type="text/javascript">
 				document.addEventListener("DOMContentLoaded", gefic_on_load);
-				window.onload = gefic_on_load();
 				function gefic_on_load(){
 					document.getElementById("btnCompleteOrder").disabled = true;
 					document.getElementById("btnCompleteOrder").innerHTML = "Aguarde um momento...";
@@ -372,6 +403,9 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 									document.getElementById("btnCompleteOrder").innerHTML = "Enviar Pagamento";
 									sessionStorage.removeItem("paymentToken_");
 								}).catch(err => {
+									document.getElementById("btnCompleteOrder").disabled = false;
+									document.getElementById("btnCompleteOrder").innerHTML = "Enviar Pagamento";
+									sessionStorage.removeItem("paymentToken_");
 									console.log("Erro ('.__LINE__.') "+err.code+": "+ err.error+" "+err.error_description);
 								});
 						}
@@ -480,41 +514,7 @@ add_hook('ClientAreaPageCart', 1, function($vars){
 				}
 			}
 		</script>';
-		$htmlOutput .= $params_api['javascript'];
-		
-		if($params['minimunamountinstallments']){
-			$minimunamountinstallments = (float)$params['minimunamountinstallments'];
-		}
-		elseif(!$params['minimunamountinstallments']){
-			$minimunamountinstallments = (float)'100.00';
-		}
-		if($params['installments'] and ( (float)$minimunamountinstallments <= (float)$vars_->rawtotal) ){
-		$htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="yes" />';
-		$htmlOutput .= '<script>sessionStorage.setItem("installment_", "yes");</script>';
-		$options_installments .= '<label style="margin-top:10px;" class="col-sm-4 control-label">Parcelamento</label>';
-		$options_installments .= '<div class="col-sm-6" style="margin: 0px 0px 20px 0px;max-width:100%;">';
-		$options_installments .= '<select id="installmentsSelect" name="installmentsSelect" style="max-width: 320px; width: 320px;" required="" class="form-control">';
-		$options_installments .= '<option value=1>Digite o cartão para ver as opções</option>'; 
-		$options_installments .= '</select></div>';
-		 $htmlOutput .= "<script>
-		 	if(document.getElementById('installment_').value == 'yes'){
-				var options_installments = '".$options_installments."';	
-				document.getElementById('creditCardInputFields').insertAdjacentHTML('beforeend',options_installments);
-			}
-		 </script>";
-		 $htmlOutput .= "<script>
-		 	if(document.getElementById('installment_').value == 'yes'){
-				var sel = document.getElementById('installmentsSelect');
-				sel.addEventListener('change', function (){
-							sessionStorage.setItem('installments_', sel.value);
-					console.log(sel.value);
-	 				 });
-			}
-		 </script>";
-		}
-		else {
-			 $htmlOutput .= '<input type="hidden" name="installment_" id="installment_" value="no" />';
-		}
+		$htmlOutput .= $params_api['javascript'];		
 		$htmlOutput .= '<script type="text/javascript" src="'.$vars['systemurl'].'modules/gateways/gofaseficartao/assets/js/ClientAreaPageCreditCardCheckout.js?v='.time().'"></script>';
 		return $htmlOutput;
 	});
