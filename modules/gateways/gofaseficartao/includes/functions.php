@@ -81,12 +81,15 @@ if( !function_exists('gefic_get_token') ){
 		}
 	}
 }
-if( !function_exists('gefic_charge') ){
+if(!function_exists('gefic_charge') ){
 	function gefic_charge($postfields){
 		$params_api = gefic_api_connect();
     	$access_token = gefic_get_token($params_api['charge_url'],$params_api['clientid'],$params_api['clientsecret']);
 		$curl = curl_init($params_api['charge_url'].'charge/one-step');
-  		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Authorization: Bearer '.$access_token['access_token'], 'Content-Type: application/json', 'partner-token: baaf5b95d55433890bd835cf006772b9462bde8f'));
+  		curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+			'Authorization: Bearer '.$access_token['access_token'],
+			'Content-Type: application/json',
+			'partner-token: baaf5b95d55433890bd835cf006772b9462bde8f'));
   		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
   		curl_setopt($curl, CURLOPT_POST, 1);
   		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($postfields));
