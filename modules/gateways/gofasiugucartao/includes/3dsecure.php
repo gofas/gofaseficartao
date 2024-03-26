@@ -1,26 +1,26 @@
 <?php
 /**
- * Módulo Efí Cartão para WHMCS
+ * Módulo iugu Cartão para WHMCS
  * @copyright	2023 Gofas Software
- * @see			https://gofas.net/?p=8423
+ * @see			https://gofas.net/?p=14946
  * @license		https://gofas.net/?p=9340
- * @support		https://gofas.net/?p=8343
- * @version		4.0.0
+ * @support		https://gofas.net/?p=12349
+ * @version		1.0.0
  */
 use WHMCS\Database\Capsule;
-function gofaseficartao_3dsecure($params){
+function gofasiugucartao_3dsecure($params){
 	define('CLIENTAREA', true);
 	require __DIR__.'/functions.php';
-    $url = gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/includes/iframe.php';
+    $url = gic_whmcs_url('whmcs_url').'modules/gateways/gofasiugucartao/includes/iframe.php';
 	if( $params['amount'] >= $params['minimunamount']){
 		$Params = json_decode( json_encode($params), true);
-		$params_api = gefic_api_connect();
+		$params_api = gic_api_connect();
 		$pay_method_id = $Params['payMethod']['payment']['pay_method_id'];
 		$invoice_duedate = $params['duedate'];
-		foreach( Capsule::table('gofaseficartao') -> where('pay_method_id','=',$pay_method_id)->get(['payment_token']) as $saved_token_ ){
+		foreach( Capsule::table('gofasiugucartao') -> where('pay_method_id','=',$pay_method_id)->get(['payment_token']) as $saved_token_ ){
 			$saved_token					= $saved_token_->payment_token;
 		}
-		$customer = gefic_customer($params['clientdetails']['id']);
+		$customer = gic_customer($params['clientdetails']['id']);
 		$postfields = array(
 				'userid'=>$params['clientdetails']['id'],
 				'invoiceid'=>$params['invoiceid'],
@@ -32,19 +32,18 @@ function gofaseficartao_3dsecure($params){
 				'pay_method_id' => $pay_method_id,
 				'saved_token'=>$saved_token,
 			);
-			$htmlOutput = '<form method="post" action="' . $url . '">';
+			$htmlOutput = '<form id="payment-form" method="post" action="' . $url . '">';
 			foreach ($postfields as $k => $v){
         		$htmlOutput .= '<input type="hidden" name="' . $k . '" value="' . urlencode($v) . '" />';
     		}
 			$htmlOutput .= '<input type="hidden" name="storeCard" id="storeCard" value="yes" />';
 			$htmlOutput .= '<input type="hidden" name="paymentToken" id="paymentToken" value="'.$saved_token.'" />';
-			//$htmlOutput .= '<input type="hidden" name="saved_token" id="saved_token" value="'.$saved_token.'" />';
 			$htmlOutput .= '<input type="hidden" name="installmentsnum" id="installmentsnum" value="1" />';
-			$htmlOutput .= '<input type="hidden" name="identificadorConta" id="identificadorConta" value="'.$params['identifier'].'" />';
+			$htmlOutput .= '<input type="hidden" name="identificadorConta" id="identificadorConta" value="'.$params['account_id'].'" />';
     		$htmlOutput .= '</form>';
 			$htmlOutput .= $params_api['javascript'];
-			$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/payment-token-efi.min.js"></script>';
-			$htmlOutput .= '<script type="module" src="'.gefic_whmcs_url('whmcs_url').'/modules/gateways/gofaseficartao/assets/js/ggnc.js"></script>';
+			$htmlOutput .= '<script type="module" src="<script type="text/javascript" src="https://js.iugu.com/v2"></script>';
+			//$htmlOutput .= '<script type="module" src="'.gic_whmcs_url('whmcs_url').'modules/gateways/gofasiugucartao/assets/js/iugu.js"></script>';
 			$htmlOutput .= '<script type="text/javascript">
 			    document.getElementById("storeCard").value = sessionStorage.getItem("nostore");
 				document.getElementById("paymentToken").value = sessionStorage.getItem("paymentToken_");
@@ -56,10 +55,10 @@ function gofaseficartao_3dsecure($params){
 	}
 	elseif( $params['amount'] < $params['minimunamount']){
 		$error .= 'O valor mínimo para utilizar esse método de pagamento é '.number_format( $params['minimunamount'] ,  2, ',', '.').'.';
-		$error .= '<br><a target="_top" style="color: #a94442;" href="'.gefic_whmcs_url('whmcs_url').'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
-		$invoice_page =json_encode(gefic_whmcs_url('whmcs_url').'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
+		$error .= '<br><a target="_top" style="color: #a94442;" href="'.gic_whmcs_url('whmcs_url').'/viewinvoice.php?id='.$params['invoiceid'].'" >Clique aqui e selecione outro método de pagamento</a>.';
+		$invoice_page =json_encode(gic_whmcs_url('whmcs_url').'/viewinvoice.php?id='.$_POST['invoiceid'].'&paymentfailed=true');
 		$error .= '<script>
-		function gefic_redir_to_invoice(){
+		function gic_redir_to_invoice(){
 			window.top.location.href='.$invoice_page.'
 		}
 		</script>';

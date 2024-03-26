@@ -1,107 +1,152 @@
 <?php
 /**
- * Módulo Efí Cartão para WHMCS
- * @copyright	2023 Gofas Software
- * @see			https://gofas.net/?p=8423
+ * Módulo iugu Cartão para WHMCS
+ * @copyright	2022 Gofas Software
+ * @see			https://gofas.net/?p=14946
  * @license		https://gofas.net/?p=9340
- * @support		https://gofas.net/?p=8343
- * @version		4.0.0
+ * @support		https://gofas.net/?p=12349
+ * @version		1.0.0
  */
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../../includes/invoicefunctions.php';
 if(!defined("WHMCS")){die();}
 use WHMCS\Database\Capsule;
-if(!function_exists('gefic_version')){
-	function gefic_version($int=false){
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gefic_version') -> get( array( 'value','created_at') ) as $gefic_version_ ){
-			$gefic_version				= $gefic_version_->value;
-			$gefic_version_created_at	= $gefic_version_->created_at;
+if(!function_exists('gic_version')){
+	function gic_version($int=false){
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gic_version') -> get( array( 'value','created_at') ) as $gic_version_ ){
+			$gic_version				= $gic_version_->value;
+			$gic_version_created_at	= $gic_version_->created_at;
 		}
 		if(!$int){
-			return $gefic_version;
+			return $gic_version;
 		}
 		if($int){
-			return (int)preg_replace("/[^0-9]/", "", $gefic_version);
+			return (int)preg_replace("/[^0-9]/", "", $gic_version);
 		}
 	}
 }
-if(!function_exists('gefic_api_connect')){
-	function gefic_api_connect(){
-		$params = getGatewayVariables('gofaseficartao');
+if(!function_exists('gic_api_connect')){
+	function gic_api_connect(){
+		$params = getGatewayVariables('gofasiugucartao');
 		if($params['sandbox']){
 			$params_api = [
 				'api_mode' => 'sandbox',
-				'clientid' => $params['clientidsandbox'],
-				'clientsecret' => $params['clientsecretsandbox'],
-				'identifier' => $params['identifier'],
-				'charge_url' => 'https://sandbox.gerencianet.com.br/v1/',
-				'javascript' => '<script type="text/javascript">var s=document.createElement("script");s.type="text/javascript";var v=parseInt(Math.random()*1000000);s.src="https://sandbox.gerencianet.com.br/v1/cdn/'. $params['identifier'].'/"+v;s.async=false;s.id="'. $params['identifier'].'";if(!document.getElementById("'. $params['identifier'].'")){document.getElementsByTagName("head")[0].appendChild(s);};$gn={validForm:true,processed:false,done:{},ready:function(fn){$gn.done=fn;}};</script>',
-				'environment'=> 'sandbox',
-				
+				'api_token' => $params['sandbox_api_token'],
+				'charge_url' => 'https://api.iugu.com/v1',
 			];
 		}
 		if(!$params['sandbox']){
 			$params_api = [
 				'api_mode' => 'live',
-				'clientid' => $params['clientid'],
-				'clientsecret' => $params['clientsecret'],
-				'identifier' => $params['identifier'],
-				'charge_url' => 'https://api.gerencianet.com.br/v1/',
-				'javascript' => '<script type="text/javascript">var s=document.createElement("script");s.type="text/javascript";var v=parseInt(Math.random()*1000000);s.src="https://api.gerencianet.com.br/v1/cdn/'. $params['identifier'].'/"+v;s.async=false;s.id="'. $params['identifier'].'";if(!document.getElementById("'. $params['identifier'].'")){document.getElementsByTagName("head")[0].appendChild(s);};$gn={validForm:true,processed:false,done:{},ready:function(fn){$gn.done=fn;}};</script>',
-				'environment'=> 'production',
+				'api_token' => $params['api_token'],
+				'charge_url' => 'https://api.iugu.com/v1',
 			];
 		}
 		return $params_api;
 	}
 }
-if( !function_exists('gefic_get_token') ){
-	function gefic_get_token(){
-		$params_api = gefic_api_connect();
-		$curl = curl_init($params_api['charge_url'].'authorize');
-		$client_id=$params_api['clientid'];
-		$client_secret=$params_api['clientsecret'];
-  		curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-			'Authorization: Basic '. base64_encode("$client_id:$client_secret"),
-			'Content-Type: application/json',
-			'partner-token: baaf5b95d55433890bd835cf006772b9462bde8f',
+if(!function_exists('gic_charge')){
+	function gic_charge($postfields){
+		$params_api = gic_api_connect();
+    	$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/charge',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_HTTPHEADER => array(
+		    	'Authorization: Basic '.base64_encode((string)$params_api['api_token'].':'),
+				'Content-Type: application/json',
+				'Accept: application/json',
+		  	),
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS => json_encode($postfields),
 		));
-  		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-  		curl_setopt($curl, CURLOPT_POST, true);
-  		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode(array('grant_type'=>'client_credentials','partner_token'=>'baaf5b95d55433890bd835cf006772b9462bde8f',)));
-  		$json = json_decode(curl_exec($curl), true);
-		if($json['access_token']){
-			return array('access_token'=>$json['access_token']);
-		}
-		else {
-			if($json){
-	  			$error	.= 'Erro: '.implode(', ', $json);
-			}
-			return array('error'=> $error, 'debug'=> $json);
-		}
-	}
-}
-if(!function_exists('gefic_charge') ){
-	function gefic_charge($postfields){
-		$params_api = gefic_api_connect();
-    	$access_token = gefic_get_token($params_api['charge_url'],$params_api['clientid'],$params_api['clientsecret']);
-		$curl = curl_init($params_api['charge_url'].'charge/one-step');
-  		curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-			'Authorization: Bearer '.$access_token['access_token'],
-			'Content-Type: application/json',
-			'partner-token: baaf5b95d55433890bd835cf006772b9462bde8f'));
-  		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-  		curl_setopt($curl, CURLOPT_POST, 1);
-  		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($postfields));
 		$result = json_decode(curl_exec($curl),true);
 		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 		return ['result_code'=>$result_code,'result'=>$result];
 	}
 }
-
-if( !function_exists('gefic_get_string_between') ){
-	function gefic_get_string_between($string, $start, $end){
+if(!function_exists('gic_iugu_customer')){
+	function gic_iugu_customer($postfields){
+		$params_api = gic_api_connect();
+    	$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/customers',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_HTTPHEADER => array(
+		    	'Authorization: Basic '.base64_encode((string)$params_api['api_token'].':'),
+				'Content-Type: application/json',
+				'Accept: application/json',
+		  	),
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS => json_encode($postfields),
+		));
+		$result = json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['result_code'=>$result_code,'result'=>$result];
+	}
+}
+if(!function_exists('gic_payment_method')){
+	function gic_payment_method($postfields){
+		$params_api = gic_api_connect();
+    	$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $params_api['charge_url'].'/customers/'.$postfields['iugu_customer'].'/payment_methods',
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_HTTPHEADER => array(
+		    	'Authorization: Basic '.base64_encode((string)$params_api['api_token'].':'),
+				'Content-Type: application/json',
+				'Accept: application/json',
+		  	),
+			CURLOPT_CUSTOMREQUEST => 'POST',
+			CURLOPT_POSTFIELDS => json_encode($postfields['post']),
+		));
+		$result = json_decode(curl_exec($curl),true);
+		$result_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		return ['result_code'=>$result_code,'result'=>$result];
+	}
+}
+if(!function_exists('gic_update_stats')){
+	function gic_update_stats(){
+		$params = getGatewayVariables('gofasiugucartao');
+		if($params['sandbox']){
+			return;
+		}
+		$whmcs_url = gic_whmcs_url();
+		$setup_admin = gic_setup_admin();
+		$query = '?software_id=14946&install_url='.$whmcs_url['admin_url'].'&current_version='.gic_get_local_version().'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge'.gic_sysinfo();
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
+		$response = curl_exec($curl);
+		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
+		$return = ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
+		return $return;
+	}
+}
+if( !function_exists('gic_get_string_between') ){
+	function gic_get_string_between($string, $start, $end){
 		$string = " ".$string;
 		$ini = strpos($string,$start);
 		if ($ini == 0) return "";
@@ -110,8 +155,8 @@ if( !function_exists('gefic_get_string_between') ){
 		return substr($string,$ini,$len);
 	}
 }
-if( !function_exists('gefic_card_add') ){
-	function gefic_card_add($card,$pay_method_id){
+if( !function_exists('gic_card_add') ){
+	function gic_card_add($card,$pay_method_id){
 		try {
 			Capsule::table('tblcreditcards')->where( 'pay_method_id', $pay_method_id)->delete();
 		}
@@ -120,12 +165,6 @@ if( !function_exists('gefic_card_add') ){
 		}
 		try {
 			Capsule::table('tblpaymethods')->where( 'id', $pay_method_id)->delete();
-		}
-		catch (\Exception $e){
-			$error .= $e->getMessage();
-		}
-		try {
-			Capsule::table('gofaseficartao')->where('pay_method_id','=',$pay_method_id)->delete();
 		}
 		catch (\Exception $e){
 			$error .= $e->getMessage();
@@ -133,37 +172,36 @@ if( !function_exists('gefic_card_add') ){
 		try {
 			$createCardPayMethod = createCardPayMethod( // Function available in WHMCS 7.9 and later
 				$card['userid'],
-				'gofaseficartao',
+				'gofasiugucartao',
 				'111111111111'.$card['cclastfour'],
 				$card['cardexp'],
 				$card['cardtype'],
-				NULL,
-				NULL,
-				$card['payment_token']
+				NULL, //start date
+				$card['cardissuenum'],//NULL, //issue number
+				$card['myId']
 			);
 		}
 		catch (Exception $e){
 			$error .= $e->getMessage();
-		}////
-		try { Capsule::table('gofaseficartao')->insert(
-			[
-			'user_id' =>$card['userid'],
-			'pay_method_id' => $pay_method_id+1,
-			'payment_token' => $card['payment_token'],
+		}
+		try { Capsule::table('gofasiugucartao')->insert([
+			'user_id' => $card['userid'],
+			'pay_method_id' => $card['myId'],
+			'payment_token' => $card['payment_token']
 		]);
 		}
 		catch (\Exception $e){
 			$error .= $e->getMessage();
-		}/////
+		}
 		if($error){
-			gefic_card_del($card['myId']);
+			gic_card_del($card['myId']);
 			return $error;
 		}
 		return 'success';
 	}
 }
-if( !function_exists('gefic_card_del') ){
-	function gefic_card_del($pay_method_id){
+if( !function_exists('gic_card_del') ){
+	function gic_card_del($pay_method_id){
 		try {
 			Capsule::table('tblcreditcards')->where( 'pay_method_id', $pay_method_id)->delete();
 		}
@@ -176,26 +214,20 @@ if( !function_exists('gefic_card_del') ){
 		catch (\Exception $e){
 			$error .= $e->getMessage();
 		}
-		try {
-			Capsule::table('gofaseficartao')->where('pay_method_id','=',$pay_method_id)->delete();
-		}
-		catch (\Exception $e){
-			$error .= $e->getMessage();
-		}	
 		if($error){
 			return $error;
 		}
 		return 'success';
 	}
 }
-if( !function_exists('gefic_add_trans') ){
-	function gefic_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
+if( !function_exists('gic_add_trans') ){
+	function gic_add_trans( $user_id, $invoice_id, $amount, $fee, $charge_id, $description ){	
  		$addtransvalues['userid'] = $user_id;
  		$addtransvalues['invoiceid'] = $invoice_id;
  		$addtransvalues['description'] = $description;
  		$addtransvalues['amountin'] = $amount;
  		$addtransvalues['fees'] = $fee;
- 		$addtransvalues['paymentmethod'] = 'gofaseficartao';
+ 		$addtransvalues['paymentmethod'] = 'gofasiugucartao';
  		$addtransvalues['transid'] = $charge_id;
  		$addtransvalues['date'] = date('d/m/Y');
 		$addtransresults = localAPI( "addtransaction", $addtransvalues, (int)$params['admin']);
@@ -209,11 +241,11 @@ if( !function_exists('gefic_add_trans') ){
 	}
 }
 
-if(!function_exists('gefic_customer')){
-	function gefic_customer($client_id){
+if(!function_exists('gic_customer') ){
+	function gic_customer($client_id){
 		//Determine custom fields id
-		$params = getGatewayVariables('gofaseficartao');
-		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), (int)gefic_setup_admin()['id']);
+		$params = getGatewayVariables('gofasiugucartao');
+		$client = localAPI('GetClientsDetails',array( 'clientid' => $client_id, 'stats' => false, ), $params['admin']);
 		foreach( Capsule::table('tblcustomfields')->where('type','=','client')->get() as $customfield ){
 			$customfield_id = $customfield->id;
 			$customfield_name = strtolower($customfield->fieldname);
@@ -313,7 +345,7 @@ if(!function_exists('gefic_customer')){
 			$cnpj				= $cpf_customfield_value;
 		}
 		// cadastro não possui CPF
-		elseif(!$cpf_customfield_value || strlen( $cpf_customfield_value ) !== 10 || strlen($cpf_customfield_value) !== 11 || strlen( $cpf_customfield_value ) !== 13 || strlen($cpf_customfield_value) !== 14 ){	
+		elseif( !$cpf_customfield_value || strlen( $cpf_customfield_value ) !== 10 || strlen($cpf_customfield_value) !== 11 || strlen( $cpf_customfield_value ) !== 13 || strlen($cpf_customfield_value) !== 14 ){	
 			$cpf = false;
 		}
 		// CNPJ com 1 nº a menos, adiciona 0 antes do documento
@@ -325,7 +357,7 @@ if(!function_exists('gefic_customer')){
 			$cnpj = $cnpj_customfield_value;
 		}
 		// Cliente não possui CNPJ
-		elseif(!$cnpj_customfield_value and strlen( $cnpj_customfield_value ) !== 14 and strlen($cnpj_customfield_value) !== 13 and strlen( $cpf_customfield_value ) !== 13 and strlen( $cpf_customfield_value ) !== 14  ){
+		elseif( !$cnpj_customfield_value and strlen( $cnpj_customfield_value ) !== 14 and strlen($cnpj_customfield_value) !== 13 and strlen( $cpf_customfield_value ) !== 13 and strlen( $cpf_customfield_value ) !== 14  ){
 			$cnpj = false;
 		}
 
@@ -333,7 +365,7 @@ if(!function_exists('gefic_customer')){
 			if( $client['companyname'] ){
 				$name	= $client['companyname'];
 			}
-			elseif(!$client['companyname'] ){
+			elseif( !$client['companyname'] ){
 				$name	= $client['firstname'].' '.$client['lastname'];
 			}
 			$doc_type	= 'J';
@@ -360,8 +392,6 @@ if(!function_exists('gefic_customer')){
 			'phone'=>preg_replace('/[^\da-z]/i', '', $client['phonenumber']),
 			'doc_type'=>$doc_type,
 			'document'=>$document,
-			'cpf'=>$cpf,
-			'cnpj'=>$cnpj,
 			'ie'=>$ie,
 			'issue_nfe'=>$issue_nfe,
 			'birthday'=>['raw'=>$birthday_raw,'br'=>$birthday_br,'us'=>$birthday_us],
@@ -370,23 +400,9 @@ if(!function_exists('gefic_customer')){
 		return $customer;
 	}
 }
-// Admin functions
-if(!function_exists('gefic_whmcs_url') ){
-	function gefic_whmcs_url($type='all'){
-        $info=[];
-        $self = App::self();
-		$info['root_dir'] = '/'.gefic_get_string_between(gefic_get_protected_property(gefic_get_protected_property(gefic_get_protected_property(gefic_get_protected_property($self, 'clientTemplate'), 'config'),'configFile'),'path'),'/','/templates/');
-		$info['whmcs_url'] = App::getSystemUrl();
-		$info['admin_path'] = gefic_get_protected_property($self, 'customadminpath');
-        $info['admin_url'] = $info['whmcs_url'].$info['admin_path'];
-		if((string)$type===(string)'all'){
-			return $info;
-		}
-        return $info[$type];
-	}
-}
-if( !function_exists('gefic_get_embed') ){
-	function gefic_get_embed($page_id,$referer,$module_version){
+
+if( !function_exists('gic_get_embed') ){
+	function gic_get_embed($page_id,$referer,$module_version){
 		$query = 'https://gofas.net/cliente/gofas/updates/?embed='.$page_id.'&referer='.$referer.'&version='.$module_version;
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
@@ -399,26 +415,26 @@ if( !function_exists('gefic_get_embed') ){
 		return ['embed'=>$embed,'http_code'=>$http_status];
 	}
 }
-if(!function_exists('gefic_encrypt')){
-	function gefic_encrypt($q) {
+if(!function_exists('gic_encrypt')){
+	function gic_encrypt($q) {
 	    $encryptionMethod = "AES-256-CBC";
 		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
 	    return openssl_encrypt($q, $encryptionMethod, $secretHash);
 	}
 }
-if(!function_exists('gefic_decrypt')){
-	function gefic_decrypt($q){
+if(!function_exists('gic_decrypt')){
+	function gic_decrypt($q){
 		$encryptionMethod = "AES-256-CBC";
 		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
 	    return openssl_decrypt($q, $encryptionMethod, $secretHash);
 	}
 }
-if( !function_exists('gefic_get_version') ){
-	function gefic_get_version($page_id,$referer,$module_version){
-		$currentUser = new \WHMCS\Authentication\CurrentUser;
+if( !function_exists('gic_get_version') ){
+	function gic_get_version($page_id,$referer,$module_version){
+		$currentUser = new \WHMCS\Authentication\CurrentUser; // Require WHMCS 8.0+
 		$admin_ = json_decode(json_encode($currentUser->admin()),true);
 		$admin = ['email'=>$admin_['email'],'firstname'=>$admin_['firstname'],'lastname'=>$admin_['lastname']];
-		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version.'&email='.$admin['email'].'&firstname='.$admin['firstname'].'&lastname='.$admin['lastname'].gefic_sysinfo();
+		$query = 'https://gofas.net/br/updates/?software='.$page_id.'&referer='.$referer.'&version='.$module_version.'&email='.$admin['email'].'&firstname='.$admin['firstname'].'&lastname='.$admin['lastname'].gic_sysinfo();
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
@@ -430,8 +446,8 @@ if( !function_exists('gefic_get_version') ){
 		return ['version'=>$available_version_,'http_code'=>$http_status];
 	}
 }
-if(!function_exists('gefic_sysinfo')){
-	function gefic_sysinfo(){
+if(!function_exists('gic_sysinfo')){
+	function gic_sysinfo(){
 		foreach( Capsule::table('tblconfiguration')
 		->where('setting','=','Version')
 		->get(['value']) as $data1 ){
@@ -445,182 +461,11 @@ if(!function_exists('gefic_sysinfo')){
 		return '&whmcs_version='.$Version.'&php_version='.$PHPVersion;
 	}
 }
-if(!function_exists('gefic_verify_module_updates')){
-	function gefic_verify_module_updates($page_id,$referer,$module_version){
-		foreach( Capsule::table('tblconfiguration')->where('setting','=','gefic_version')->get(['value','created_at','updated_at']) as $version_ ){
-			$version		= json_decode($version_->value, true);
-			$local_version	= $version['local_version'];
-			$last_version	= $version['last_version'];
-			$embed			= $version['check'];
-			$created_at		= $version_->created_at;
-			$updated_at		= $version_->updated_at;
-			//$available_version	= (int)preg_replace("/[^0-9]/","",$version['last_version']);
-		}
-		///// Get
-		if(!$version){
-			$get_version = gefic_get_version($page_id,$referer,$module_version);
-			$get_embed	 = gefic_get_embed($page_id,$referer,$module_version);
-			
-			if((int)$get_version['http_code'] !== 200){
-				$error .= $get_version['http_code'].' '.$get_version['version'];
-			}
-			else{
-				$available_version = $get_version['version'];
-			}
-		}
-		if($version and strtotime($updated_at) < strtotime("-1 day")){
-			$get_version = gefic_get_version($page_id,$referer,$module_version);
-			$get_embed	 = gefic_get_embed($page_id,$referer,$module_version);
-			if((int)$get_version['http_code'] !== 200){
-				$error .= $get_version['http_code'].' '.$get_version['version'];
-			}
-			else{
-				$available_version = $get_version['version'];
-			}
-		}
-		if($version and (string)$module_version !== (string)$local_version){
-			$get_version = gefic_get_version($page_id,$referer,$module_version);
-			$get_embed	 = gefic_get_embed($page_id,$referer,$module_version);
-			if((int)$get_version['http_code'] !== 200){
-				$error .= $get_version['http_code'].' '.$get_version['version'];
-			}
-			else{
-				$available_version = $get_version['version'];
-			}
-		}
-		if($version and strtotime($updated_at) > strtotime("-1 day")){
-			$available_version = $last_version;
-		}
-		// insert
-		if(!$version and $get_version['version'] and $get_embed['embed']){
-			$local_version = $module_version;
-			$last_version = $get_version['version'];
-			$embed		  = gefic_encrypt($get_embed['embed']);
-			$created_at		= date("Y-m-d H:i:s");
-			$updated_at		= date("Y-m-d H:i:s");
-
-			try { Capsule::table('tblconfiguration')->insert(array(
-				'setting' => 'gefic_version',
-				'value' => json_encode([
-					'local_version'=>$module_version,
-					'last_version'=>$get_version['version'],
-					'check'=>gefic_encrypt($get_embed['embed']),
-					'admin'=>gefic_current_admin(),
-				]),
-				'created_at' => $created_at,
-				'updated_at' => $updated_at
-			));
-			}
-			catch (\Exception $e){
-				$error .= $e->getMessage();
-			}
-		}
-		// update
-		if($version and $get_version['version'] and $get_embed['embed'] and strtotime($updated_at) < strtotime("-1 day") and (
-			$available_version !== $module_version ||
-			$local_version !== $module_version ||
-			$last_version !== $available_version
-		)){
+if(!function_exists('gic_verifyInstall')){
+	function gic_verifyInstall(){
+		if( !Capsule::schema()->hasTable('gofasiugucartao') ){
 			try {
-				Capsule::table('tblconfiguration')->where('setting','gefic_version')->update([
-					'value' => json_encode([
-						'local_version'=>$module_version,
-						'last_version'=>$available_version,
-						'check'=>gefic_encrypt($get_embed['embed']),
-						'admin'=>gefic_current_admin(),
-					]),
-					'created_at' =>  $created_at,
-					'updated_at' => date("Y-m-d H:i:s")]
-				);
-			}
-			catch (\Exception $e){
-				$error .= $e->getMessage();
-			}
-		}
-		// update
-		if($version and $get_version['version'] and $get_embed['embed'] and (string)$local_version !== (string)$module_version){
-			try {
-				Capsule::table('tblconfiguration')->where('setting','gefic_version')->update([
-					'value' => json_encode([
-						'local_version'=>$module_version,
-						'last_version'=>$available_version,
-						'check'=>gefic_encrypt($get_embed['embed']),
-						'admin'=>gefic_current_admin(),
-					]),
-					'created_at' =>  $created_at,
-					'updated_at' => date("Y-m-d H:i:s")]
-				);
-			}
-			catch (\Exception $e){
-				$error .= $e->getMessage();
-			}
-		}
-		$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
-		$available_version_int = (int)preg_replace("/[^0-9]/", "", $available_version);
-		if( $available_version_int === $module_version_int ){
-			$message .= '<p style="color: green"><i class="fas fa-check-square"></i> Você está executando a versão mais recente do módulo.</p>';
-			$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gefic_whmcs_url('admin_url').'/configgateways.php?manage=gofaseficartao&resetversion=gofaseficartao#m_gofaseficartao">verificar agora</a>.</p>';
-		}
-		if( $available_version_int > $module_version_int ){
-			$message .= '<p style="font-size: 14px; color: red;"><i class="fas fa-exclamation-triangle"></i> Atualização disponível, verifique a <a style="color:#CC0000;text-decoration:underline;" href="https://gofas.net/?p='.$page_id.'" target="_blank">versão '.$available_version.'</a>';
-			$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gefic_whmcs_url('admin_url').'/configgateways.php?manage=gofaseficartao&resetversion=gofaseficartao#m_gofaseficartao">verificar agora</a>.</p>';$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gefic_whmcs_url('admin_url').'/configgateways.php?manage=gofaseficartao&resetversion=gofaseficartao#m_gofaseficartao">verificar agora</a>.</p>';$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gefic_whmcs_url('admin_url').'/configgateways.php?manage=gofaseficartao&resetversion=gofaseficartao#m_gofaseficartao">verificar agora</a>.</p>';
-		}
-		if( $available_version_int < $module_version_int ){
-			$message = '<p style="font-size: 14px; color: orange;"><i class="fas fa-exclamation-triangle"></i> Você está executando uma versão Beta desse módulo.<br>Baixar versão estável: <a style="color:#CC0000;text-decoration:underline;" href="https://gofas.net/?p='.$page_id.'" target="_blank">v'.$available_version.'</a>';
-			$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gefic_whmcs_url('admin_url').'/configgateways.php?manage=gofaseficartao&resetversion=gofaseficartao#m_gofaseficartao">verificar agora</a>.</p>';
-		}
-		return [
-			'version'=>$version,
-			'get_version'=>$get_version,
-			'message' => $message,
-			'check'=> $embed,
-			'error' => $error,
-		];
-	}
-}
-if(!function_exists('gefic_version')){
-	function gefic_version($opt=1){
-		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gefic_version') -> get( array( 'value','created_at') ) as $gefic_version_ ){
-			$gefic_version				= $gefic_version_->value;
-			$gefic_version_created_at	= $gefic_version_->created_at;
-		}
-		if($opt=1){ // local_version string
-			$version = json_decode($gefic_version, true);
-			return $version['local_version'];
-		}
-		if($opt=2){ // local_version integer
-			$version = json_decode($gefic_version, true);
-			return (int)preg_replace("/[^0-9]/", "", $version['local_version']);
-		}
-		if($opt=3){ // full
-			return$gefic_version;
-		}
-	}
-}
-if(!function_exists('gefic_tbladmins')){
-	function gefic_tbladmins(){
-		foreach( Capsule::table('tbladmins') -> get() as $tbladmins_ ){
-			$tbladmins[$tbladmins_->id] = $tbladmins_->id.' - '.$tbladmins_->firstname.' '.$tbladmins_->lastname.' ('.$tbladmins_->username.')';
-		}
-		return $tbladmins;
-	}
-}
-if(!function_exists('gefic_tblticketdepartments')){
-	function gefic_tblticketdepartments(){
-		$tblticketdepartments[] = '';
-		foreach( Capsule::table('tblticketdepartments') -> get() as $tblticketdepartments_ ){
-			$tblticketdepartments_id			= $tblticketdepartments_->id;
-			$tblticketdepartments_name			= $tblticketdepartments_->name;
-			$tblticketdepartments[]				= $tblticketdepartments_id.' - '.$tblticketdepartments_name;
-		}
-		return $tblticketdepartments;
-	}
-}
-if(!function_exists('gefic_verifyInstall')){
-	function gefic_verifyInstall(){
-		if( !Capsule::schema()->hasTable('gofaseficartao') ){
-			try {
-				Capsule::schema()->create('gofaseficartao', function($table){
+				Capsule::schema()->create('gofasiugucartao', function($table){
 					// incremented id
 					$table->increments('id');
 					$table->string('user_id');
@@ -640,85 +485,219 @@ if(!function_exists('gefic_verifyInstall')){
 		}
 	}
 }
-if(!function_exists('gefic_current_admin')){
-	function gefic_current_admin(){
-		$currentUser = new \WHMCS\Authentication\CurrentUser;
-		$admin = json_decode(json_encode($currentUser->admin()),true);
-		return $admin;
+if(!function_exists('gic_verify_module_updates')){
+	function gic_verify_module_updates($page_id,$referer,$module_version){
+		foreach( Capsule::table('tblconfiguration')->where('setting','=','gic_version')->get(['value','created_at','updated_at']) as $version_ ){
+			$version		= json_decode($version_->value, true);
+			$local_version	= $version['local_version'];
+			$last_version	= $version['last_version'];
+			$embed			= $version['check'];
+			$created_at		= $version_->created_at;
+			$updated_at		= $version_->updated_at;
+			//$available_version	= (int)preg_replace("/[^0-9]/","",$version['last_version']);
+		}
+		///// Get
+		if(!$version){
+			$get_version = gic_get_version($page_id,$referer,$module_version);
+			$get_embed	 = gic_get_embed($page_id,$referer,$module_version);
+			
+			if((int)$get_version['http_code'] !== 200){
+				$error .= $get_version['http_code'].' '.$get_version['version'];
+			}
+			else{
+				$available_version = $get_version['version'];
+			}
+		}
+		if($version and strtotime($updated_at) < strtotime("-1 day")){
+			$get_version = gic_get_version($page_id,$referer,$module_version);
+			$get_embed	 = gic_get_embed($page_id,$referer,$module_version);
+			if((int)$get_version['http_code'] !== 200){
+				$error .= $get_version['http_code'].' '.$get_version['version'];
+			}
+			else{
+				$available_version = $get_version['version'];
+			}
+		}
+		if($version and (string)$module_version !== (string)$local_version){
+			$get_version = gic_get_version($page_id,$referer,$module_version);
+			$get_embed	 = gic_get_embed($page_id,$referer,$module_version);
+			if((int)$get_version['http_code'] !== 200){
+				$error .= $get_version['http_code'].' '.$get_version['version'];
+			}
+			else{
+				$available_version = $get_version['version'];
+			}
+		}
+		if($version and strtotime($updated_at) > strtotime("-1 day")){
+			$available_version = $last_version;
+		}
+		// insert
+		if(!$version and $get_version['version'] and $get_embed['embed']){
+			$local_version = $module_version;
+			$last_version = $get_version['version'];
+			$embed		  = gic_encrypt($get_embed['embed']);
+			$created_at		= date("Y-m-d H:i:s");
+			$updated_at		= date("Y-m-d H:i:s");
+
+			try { Capsule::table('tblconfiguration')->insert(array(
+				'setting' => 'gic_version',
+				'value' => json_encode([
+					'local_version'=>$module_version,
+					'last_version'=>$get_version['version'],
+					'check'=>gic_encrypt($get_embed['embed']),
+					'admin'=>gic_current_admin(),
+				]),
+				'created_at' => $created_at,
+				'updated_at' => $updated_at
+			));
+			}
+			catch (\Exception $e){
+				$error .= $e->getMessage();
+			}
+		}
+		// update
+		if($version and $get_version['version'] and $get_embed['embed'] and strtotime($updated_at) < strtotime("-1 day") and (
+			$available_version !== $module_version ||
+			$local_version !== $module_version ||
+			$last_version !== $available_version
+		)){
+			try {
+				Capsule::table('tblconfiguration')->where('setting','gic_version')->update([
+					'value' => json_encode([
+						'local_version'=>$module_version,
+						'last_version'=>$available_version,
+						'check'=>gic_encrypt($get_embed['embed']),
+						'admin'=>gic_current_admin(),
+					]),
+					'created_at' =>  $created_at,
+					'updated_at' => date("Y-m-d H:i:s")]
+				);
+			}
+			catch (\Exception $e){
+				$error .= $e->getMessage();
+			}
+		}
+		// update
+		if($version and $get_version['version'] and $get_embed['embed'] and (string)$local_version !== (string)$module_version){
+			try {
+				Capsule::table('tblconfiguration')->where('setting','gic_version')->update([
+					'value' => json_encode([
+						'local_version'=>$module_version,
+						'last_version'=>$available_version,
+						'check'=>gic_encrypt($get_embed['embed']),
+						'admin'=>gic_current_admin(),
+					]),
+					'created_at' =>  $created_at,
+					'updated_at' => date("Y-m-d H:i:s")]
+				);
+			}
+			catch (\Exception $e){
+				$error .= $e->getMessage();
+			}
+		}
+		$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
+		$available_version_int = (int)preg_replace("/[^0-9]/", "", $available_version);
+		if( $available_version_int === $module_version_int ){
+			$message .= '<p style="color: green"><i class="fas fa-check-square"></i> Você está executando a versão mais recente do módulo.</p>';
+			$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gic_whmcs_url('admin_url').'/configgateways.php?manage=gofasiugucartao&resetversion=gofasiugucartao#m_gofasiugucartao">verificar agora</a>.</p>';
+		}
+		if( $available_version_int > $module_version_int ){
+			$message .= '<p style="font-size: 14px; color: red;"><i class="fas fa-exclamation-triangle"></i> Atualização disponível, verifique a <a style="color:#CC0000;text-decoration:underline;" href="https://gofas.net/?p='.$page_id.'" target="_blank">versão '.$available_version.'</a>';
+			$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gic_whmcs_url('admin_url').'/configgateways.php?manage=gofasiugucartao&resetversion=gofasiugucartao#m_gofasiugucartao">verificar agora</a>.</p>';$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gic_whmcs_url('admin_url').'/configgateways.php?manage=gofasiugucartao&resetversion=gofasiugucartao#m_gofasiugucartao">verificar agora</a>.</p>';$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gic_whmcs_url('admin_url').'/configgateways.php?manage=gofasiugucartao&resetversion=gofasiugucartao#m_gofasiugucartao">verificar agora</a>.</p>';
+		}
+		if( $available_version_int < $module_version_int ){
+			$message = '<p style="font-size: 14px; color: orange;"><i class="fas fa-exclamation-triangle"></i> Você está executando uma versão Beta desse módulo.<br>Baixar versão estável: <a style="color:#CC0000;text-decoration:underline;" href="https://gofas.net/?p='.$page_id.'" target="_blank">v'.$available_version.'</a>';
+			$message .= '<p>Última verificação '.date('d/m/Y à\s H:i', strtotime($updated_at)).' - <a style="text-decoration:underline;" href="'.gic_whmcs_url('admin_url').'/configgateways.php?manage=gofasiugucartao&resetversion=gofasiugucartao#m_gofasiugucartao">verificar agora</a>.</p>';
+		}
+		return [
+			'version'=>$version,
+			'get_version'=>$get_version,
+			'message' => $message,
+			'check'=> $embed,
+			'error' => $error,
+		];
 	}
 }
-if(!function_exists('gefic_encrypt')){
-	function gefic_encrypt($q) {
-		$encryptionMethod = "AES-256-CBC";
-		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
-		return openssl_encrypt($q, $encryptionMethod, $secretHash);
-	}
-}
-if(!function_exists('gefic_decrypt')){
-	function gefic_decrypt($q){
-		$encryptionMethod = "AES-256-CBC";
-		$secretHash = "535ba9979bc6c7ff151f2136cd13b0f9";
-		return openssl_decrypt($q, $encryptionMethod, $secretHash);
-	}
-}
-if(!function_exists('gefic_get_protected_property')){
-	function gefic_get_protected_property($object, $property){
-	    $reflectedClass = new \ReflectionClass($object);
-	    $reflection = $reflectedClass->getProperty($property);
-	    $reflection->setAccessible(true);
-	    return $reflection->getValue($object);
-	}
-}
-if(!function_exists('gefic_reset_local_version')){
-	function gefic_reset_local_version(){
+if(!function_exists('gic_reset_local_version')){
+	function gic_reset_local_version(){
         try{
-	        Capsule::table('tblconfiguration')->where('setting','=','gefic_version')->delete();
+	        Capsule::table('tblconfiguration')->where('setting','=','gic_version')->delete();
 	        return 'sucess';
         }
         catch (\Exception $e){
             return $e->getMessage();
         }
 }}
-if(!function_exists('gefic_setup_admin')){
-	function gefic_setup_admin($key=NULL){
-	foreach( Capsule::table('tblconfiguration')->where('setting','=','gefic_version')->get(['value']) as $version_ ){
+if(!function_exists('gic_version')){
+	function gic_version($opt=1){
+		foreach( Capsule::table('tblconfiguration') -> where('setting', '=', 'gic_version') -> get( array( 'value','created_at') ) as $gic_version_ ){
+			$gic_version				= $gic_version_->value;
+			$gic_version_created_at	= $gic_version_->created_at;
+		}
+		if($opt=1){ // local_version string
+			$version = json_decode($gic_version, true);
+			return $version['local_version'];
+		}
+		if($opt=2){ // local_version integer
+			$version = json_decode($gic_version, true);
+			return (int)preg_replace("/[^0-9]/", "", $version['local_version']);
+		}
+		if($opt=3){ // full
+			return$gic_version;
+		}
+	}
+}
+if(!function_exists('gic_current_admin')){
+	function gic_current_admin(){
+		$currentUser = new \WHMCS\Authentication\CurrentUser;
+		$admin = json_decode(json_encode($currentUser->admin()),true);
+		return $admin;
+	}
+}
+if(!function_exists('gic_tbladmins')){
+	function gic_tbladmins(){
+		foreach( Capsule::table('tbladmins') -> get() as $tbladmins_ ){
+			$tbladmins[$tbladmins_->id] = $tbladmins_->id.' - '.$tbladmins_->firstname.' '.$tbladmins_->lastname.' ('.$tbladmins_->username.')';
+		}
+		return $tbladmins;
+	}
+}
+
+if(!function_exists('gic_whmcs_url')){
+	function gic_whmcs_url($type='all'){
+        $info=[];
+        $self = App::self();
+		$info['root_dir'] = '/'.gic_get_string_between(gic_get_protected_property(gic_get_protected_property(gic_get_protected_property(gic_get_protected_property($self, 'clientTemplate'), 'config'),'configFile'),'path'),'/','/templates/');
+		$info['whmcs_url'] = App::getSystemUrl();
+		$info['admin_path'] = gic_get_protected_property($self, 'customadminpath');
+        $info['admin_url'] = $info['whmcs_url'].$info['admin_path'];
+		if((string)$type===(string)'all'){
+			return $info;
+		}
+        return $info[$type];
+	}
+}
+if(!function_exists('gic_get_protected_property')){
+	function gic_get_protected_property($object, $property){
+	    $reflectedClass = new \ReflectionClass($object);
+	    $reflection = $reflectedClass->getProperty($property);
+	    $reflection->setAccessible(true);
+	    return $reflection->getValue($object);
+	}
+}
+if(!function_exists('gic_setup_admin')){
+	function gic_setup_admin(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','gic_version')->get(['value']) as $version_ ){
 		$version		= json_decode($version_->value, true);
-		if($key){
-			$admin			= $version['admin'][$key];
-		}
-		else{
-			$admin			= $version['admin'];
-		}
+		$admin			= $version['admin'];
 	}
 	return $admin;
 }}
-if(!function_exists('gefic_get_local_version')){
-	function gefic_get_local_version(){
-	foreach( Capsule::table('tblconfiguration')->where('setting','=','gefic_version')->get(['value']) as $version_ ){
+if(!function_exists('gic_get_local_version')){
+	function gic_get_local_version(){
+	foreach( Capsule::table('tblconfiguration')->where('setting','=','gic_version')->get(['value']) as $version_ ){
 		$version		= json_decode($version_->value, true);
 		$local_version			= $version['local_version'];
 	}
 	return $local_version;
 }}
-if(!function_exists('gefic_update_stats') ){
-	function gefic_update_stats(){
-		$params = getGatewayVariables('gofaseficartao');
-		if($params['sandbox']){
-			return;
-		}
-		$whmcs_url = gefic_whmcs_url();
-		$setup_admin = gefic_setup_admin();
-		$query = '?software_id=8423&install_url='.$whmcs_url['admin_url'].'&current_version='.gefic_get_local_version().'&installer_email='.$setup_admin['email'].'&installer_firstname='.$setup_admin['firstname'].'&installer_lastname='.$setup_admin['lastname'].'&action=charge'.gefic_sysinfo();
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-		curl_setopt($curl, CURLOPT_URL, 'https://gofas.net/br/updates/stats.php'.$query);
-		$response = curl_exec($curl);
-		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		curl_close($curl);
-		$return = ['query'=>$query,'response'=>$response,'http_code'=>$http_status];
-		logModuleCall('gofaseficartao', 'capture_stats', ['module_version'=>gefic_version(),$query],'post',$return,'replaceVars');
-		return $return;
-	}
-}
