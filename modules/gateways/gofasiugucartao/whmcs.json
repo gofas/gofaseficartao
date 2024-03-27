@@ -9,15 +9,13 @@
     "tagline": "Recebimentos únicos, recorrentes e automáticos via cartão de crédito",
     "long": "O módulo de integração Gofas iugu cartão para WHMCS permite receber pagamentos com cartão de crédito à vista, parcelados, automatizar pagamentos recorrentes e capturar pagamentos manualmente. Tudo isso sem armazenar o cartão de crédito dos clientes no seu WHMCS.",
     "features": [
-      "Checkout já na página onde o cliente seleciona o método de pagamento de novos pedidos",
+      "Checkout no fluxo de pagamentos de novos pedidos",
       "Pagamentos à vista ou parcelados, você escolhe o valor mínimo para parcelar e o número máximo de parcelas",
       "Armazena o cartão de forma segura nos servidores da iugu para ser reutilizado no futuro pelo seu WHMCS",
       "Utiliza a interface nativa do WHMCS para módulos de cartão de crédito",
       "Captura pagamentos automaticamente quando novas faturas são geradas",
       "Captura pagamentos automaticamente quando lembretes de faturas são gerados, caso o pagamento não tenha sido capturado na criação da fatura",
       "Captura pagamentos através do botão Capturar Pagamento na edição das faturas da área administrativa do WHMCS",
-      "Processa reembolsos manuais na edição das faturas da área administrativa do WHMCS (apenas valor integral)",
-      "Cancela a transação, muda o status da fatura para Não Pago e notifica o admin do WHMCS quando um reembolso é realizado através da iugu",
       "Permite ao cliente deletar seus cartões na área do cliente"
     ]
   },
