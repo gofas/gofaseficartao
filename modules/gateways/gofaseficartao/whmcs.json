@@ -1,0 +1,33 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-gateways",
+  "name": "gofaseficartao",
+  "license": "proprietary",
+  "category": "payments",
+  "description": {
+    "name": "Gofas Efí Cartão",
+    "tagline": "Recebimento via cartão de crédito diretamente nas faturas do WHMCS",
+    "long": "Converta mais vendas com pagamentos recorrentes e parcelamento em até 12x, via checkout 100% transparente e sem salvar localmente o cartão do cliente.",
+    "features": [
+      "Altamente seguro, os dados do cartão são enviados diretamente do navegador do cliente para os servidores Efí",
+      "Pagamento parcelado em até 12x",
+      "Pagamentos recorrentes com capturas automáticas",
+      "Captura de pagamento manual pelo admin do WHMCS a qualquer momento",
+      "E muito mais."
+    ]
+  },
+  "logo": {
+    "filename": "/assets/img/logo.png"
+  },
+  "support": {
+    "homepage": "https:\/\/gofas.net\/gefic",
+    "support_url": "https:\/\/gofas.net\/?p=8343",
+    "docs_url": "https:\/\/gofas.net\/gefic"
+  },
+  "authors": [
+    {
+      "name": "Gofas Software",
+      "homepage": "https:\/\/gofas.net\/"
+    }
+  ]
+}
