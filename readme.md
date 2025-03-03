@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mauriciogofas/gofaseficartao/tree/HEAD)
+
+[Full Changelog](https://github.com/mauriciogofas/gofaseficartao/compare/v4.0.2...HEAD)
+
+**Closed issues:**
+
+- Compatibilidade com PHP 8.2 e 8.3 [\#6](https://github.com/mauriciogofas/gofaseficartao/issues/6)
+
 ## [v4.0.2](https://github.com/mauriciogofas/gofaseficartao/tree/v4.0.2) (05/10/2023)
 
 [Full Changelog](https://github.com/mauriciogofas/gofaseficartao/compare/v4.0.1...v4.0.2)
