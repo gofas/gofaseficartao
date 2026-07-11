@@ -5,6 +5,7 @@
 
 **Melhorias:**
 
+- Adicionar consentimento e padronizar telemetria - [#9](https://github.com/mauriciogofas/gofaseficartao/issues/9)
 - Migrar repo para org gofas - [#8](https://github.com/mauriciogofas/gofaseficartao/issues/8)
 - Compatibilidade com PHP 8.2 e 8.3 - [#6](https://github.com/mauriciogofas/gofaseficartao/issues/6) <a href="https://github.com/mauriciogofas/gofaseficartao/issues?q=is%3Aissue+state%3Aclosed+label%3Aenhancement" style="color:#a99c9c;text-decoration:none"><code>enhancement</code></a>
 
