@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=8423
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=8343
- * @version		4.0.0
+ * @version		4.2.0
  */
 require_once __DIR__ . '/../../../../init.php';
 require_once __DIR__ . '/../../../../includes/gatewayfunctions.php';
@@ -700,7 +700,7 @@ if(!function_exists('gefic_get_local_version')){
 }}
 if(!function_exists('gefic_update_stats') ){
 	function gefic_module_version(){
-		return '4.1.0';
+		return '4.2.0';
 	}
 	function gefic_update_stats(){
 		$params = getGatewayVariables('gofaseficartao');

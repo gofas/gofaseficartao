@@ -5,7 +5,7 @@
  * @see			https://gofas.net/?p=8423
  * @license		https://gofas.net/?p=9340
  * @support		https://gofas.net/?p=8343
- * @version		4.1.0
+ * @version		4.2.0
  */
 
 if( !defined('WHMCS')){ die(''); }
@@ -19,7 +19,7 @@ function gofaseficartao_MetaData(){
 if(!function_exists('gofaseficartao_config')){
 	function gofaseficartao_config(){
 		require_once __DIR__.'/functions.php';
-		$module_version = '4.1.0';
+		$module_version = '4.2.0';
 		$module_version_int = (int)preg_replace("/[^0-9]/", "", $module_version);
 		$module_page	= '8423';
 		$verify_install = gefic_verifyInstall();
