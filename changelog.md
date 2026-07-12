@@ -1,6 +1,6 @@
 # Changelog
 
-## [Próxima atualização](https://github.com/gofas/gofaseficartao/tree/HEAD)
+## [v4.2.0 - 12/07/2026](https://github.com/gofas/gofaseficartao/releases/tag/v4.2.0)
 
 
 **Melhorias:**
@@ -10,7 +10,7 @@
 - Migrar repo para org gofas - [#8](https://github.com/gofas/gofaseficartao/issues/8)
 - Compatibilidade com PHP 8.2 e 8.3 - [#6](https://github.com/gofas/gofaseficartao/issues/6) <a href="https://github.com/gofas/gofaseficartao/issues?q=is%3Aissue+state%3Aclosed+label%3Aenhancement" style="color:#a99c9c;text-decoration:none"><code>enhancement</code></a>
 
-[Comparar versões](https://github.com/gofas/gofaseficartao/compare/v4.1.0...HEAD)
+[Comparar versões](https://github.com/gofas/gofaseficartao/compare/v4.1.0...v4.2.0)
 
 ## [v4.1.0 - 07/06/2026](https://github.com/gofas/gofaseficartao/releases/tag/v4.1.0)
 
