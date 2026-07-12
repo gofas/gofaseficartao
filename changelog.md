@@ -1,5 +1,14 @@
 # Changelog
 
+## [Próxima atualização](https://github.com/gofas/gofaseficartao/tree/HEAD)
+
+
+**Melhorias:**
+
+- readme: conteudo da pagina do site transferido e captura de configuracao - [#11](https://github.com/gofas/gofaseficartao/issues/11)
+
+[Comparar versões](https://github.com/gofas/gofaseficartao/compare/v4.2.0...HEAD)
+
 ## [v4.2.0 - 12/07/2026](https://github.com/gofas/gofaseficartao/releases/tag/v4.2.0)
 
 
