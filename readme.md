@@ -1,14 +1,30 @@
 # Módulo Efí Cartão para WHMCS
 
+[![versão](https://img.shields.io/github/v/release/gofas/gofaseficartao?label=vers%C3%A3o&color=005071&style=flat-square)](https://github.com/gofas/gofaseficartao/releases/latest)
+[![downloads](https://img.shields.io/github/downloads/gofas/gofaseficartao/total?label=downloads&color=005071&style=flat-square)](https://github.com/gofas/gofaseficartao/releases/latest)
+[![licença](https://img.shields.io/badge/licen%C3%A7a-propriet%C3%A1ria-005071?style=flat-square)](https://gofas.net/contrato-de-venda-de-licenca-de-uso-de-software/)
+[![suporte](https://img.shields.io/badge/suporte-f%C3%B3rum%20gratuito-ff8700?style=flat-square)](https://gofas.net/foruns/)
+
 Módulo de pagamento com cartão de crédito para WHMCS, integrado à API Efí (antiga Gerencianet). Checkout 100% transparente, com parcelamento em até 12x e pagamentos recorrentes, direto nas faturas do seu WHMCS. Desenvolvido pela Gofas Software.
 
 O módulo não armazena dados de cartão no seu WHMCS. Os dados são enviados do navegador do cliente diretamente para os servidores da Efí, sem passar pelo seu sistema.
 
+## Sumário
+
+- [Download](#download)
+- [Funcionalidades](#funcionalidades)
+- [Requisitos](#requisitos)
+- [Instalação](#instalação)
+- [Configuração](#configuração)
+- [Informações importantes](#informações-importantes)
+- [Suporte](#suporte)
+- [Licença](#licença)
+
 ## Download
 
-Baixe a versão mais recente:
+**[Baixar a versão mais recente](https://github.com/gofas/gofaseficartao/releases/latest/download/gofaseficartao.zip)**
 
-https://github.com/gofas/gofaseficartao/releases/latest/download/gofaseficartao.zip
+O download é contabilizado no site pelo contador de instalações do módulo.
 
 ## Funcionalidades
 
@@ -49,7 +65,7 @@ Obtenha o identificador da conta e crie uma Aplicação na sua conta Efí para g
 
 ### Opções do módulo
 
-<img src="https://raw.githubusercontent.com/gofas/gofaseficartao/master/docs/img/tela-configuracoes-modulo.png" alt="Tela de configuracoes do modulo" width="640">
+<img src="https://raw.githubusercontent.com/gofas/gofaseficartao/master/docs/img/tela-configuracoes-modulo-4.2.0.png" alt="Tela de configuracoes do modulo" width="640">
 
 - **Identificador da conta**: identificador da sua conta Efí.
 - **Chave Client ID Produção** e **Chave Client Secret Produção**: credenciais da aplicação em modo produção.
