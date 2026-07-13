@@ -2,7 +2,7 @@
 
 [![versão](https://img.shields.io/github/v/release/gofas/gofaseficartao?label=vers%C3%A3o&color=005071&style=flat-square)](https://github.com/gofas/gofaseficartao/releases/latest)
 [![downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fgofas.net%2Fwp-json%2Fgofas%2Fv1%2Fbadge%2Fgofaseficartao&style=flat-square)](https://github.com/gofas/gofaseficartao/releases/latest)
-[![suporte](https://img.shields.io/badge/suporte-f%C3%B3rum%20gratuito-ff8700?style=flat-square)](https://gofas.net/foruns/)
+[![abrir issue](https://img.shields.io/badge/suporte-abrir%20issue-ff8700?style=flat-square)](https://gofas.net/?p=8343/#new-post)
 
 Módulo de pagamento com cartão de crédito para WHMCS, integrado à API Efí (antiga Gerencianet). Checkout 100% transparente, com parcelamento em até 12x e pagamentos recorrentes, direto nas faturas do seu WHMCS. Desenvolvido pela Gofas Software.
 
@@ -84,7 +84,7 @@ Obtenha o identificador da conta e crie uma Aplicação na sua conta Efí para g
 
 ## Suporte
 
-Fórum de suporte gratuito: https://gofas.net/foruns/
+[Abrir issue](https://gofas.net/?p=8343/#new-post) no fórum do módulo.
 
 ## Licença
 
